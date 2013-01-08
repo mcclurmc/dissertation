@@ -1,0 +1,97 @@
+\documentclass[proposal]{softeng}
+
+\usepackage{times}
+
+\title{Preparing an MSc Project Proposal}
+\author{Jim Davies}
+\organisation{University of Oxford}
+\college{Kellogg College}
+\award{Software Engineering} 
+
+% \date{July 2009}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+You should include a 100 to 200 word abstract.
+\end{abstract}
+ 
+\section{Area of study}
+
+You should provide a brief account of the application domain: the
+situation that you are going to explore, the software that you are
+going to develop, or the problem that you wish to address.  This
+section should be one or two pages long. 
+
+\section{Proposed work}
+
+You should explain what you intend to do, how you propose to do it,
+
+and what you expect to achieve in terms of outcomes.  It should be
+clear from your explanation:
+\begin{itemize}
+\item which aspects of the situation, system, or problem that you intend
+  to address---the intended scope of your project;
+\item which principles, methods, tools, or techniques you intend to
+  apply;
+\item what you expect to be able to report, and how this will serve to
+  demonstrate your mastery of the subject.
+\end{itemize}
+This section also should be one or two pages long. 
+
+\section{Project plan}
+
+You should explain the order in which you will address the various
+aspects of the work, a realistic allocation of time to each task, and
+the dates by which each task should be completed.  You should list key
+milestones and interim outputs or results, and explain what actions
+would be taken if some of these could not be achieved: what would you
+do instead?   This section should be between half a page and perhaps a
+whole page in length.  
+
+\section{Dissertation structure}
+
+You should describe the broad organisation of your dissertation, an outline table of contents, including chapter headings and subheadings would be fine.
+
+\section{Ethical considerations}
+
+Should your work have any ethical considerations, you should discuss these and how you plan to address them here. In particular, if your research involves human participants, you will need to apply for ethical approval from CUREC. http://www.admin.ox.ac.uk/curec/introduction/
+
+\bibliographystyle{plain}
+\bibliography{template-bibliography}
+
+\clearpage
+
+\section*{Notes}
+
+\begin{itemize}\raggedright
+\item You can copy this file---\verb|template-proposal.tex|---and use it
+  as a basis for preparing your proposal in \LaTeX; you may wish to
+  rename the file to reflect its new contents.
+\item You should edit the declarations above %
+  \verb|\begin{document}|%
+  to reflect your own title, name, college, and organisation; you
+  can set the date manually by uncommenting \verb|\date|
+\item You should declare \verb|\award| to be either `Software
+  Engineering' or `Software and Systems Security'---it's currently set
+  to the former.
+\item You should ensure that the file \verb|softeng.cls| is in
+  the current directory (or can be found using a suitable \TeX\ path).
+  Do not rename this file unless you also rename the reference to it
+  at the top of your \verb|.tex| file.
+\item You should ensure that the file \verb|oxfordlogo.pdf| is
+  similarly available.  If you have any problems in loading or
+  locating this file, you can use the \verb|nologo| option at the top
+  of your \verb|.tex| file, like this:
+\begin{verbatim}
+  \documentclass[nologo]{softeng}
+\end{verbatim}
+\item You can include references, and a bibliography, in your proposal
+  if you wish.  We've used one here: see~\cite{exampleref}.  You'll
+  need to have a BibTeX database file.  The reference here is
+  documented in \verb|template-bibliography.bib|.
+\end{itemize}
+
+\end{document}

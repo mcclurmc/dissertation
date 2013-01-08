@@ -1,0 +1,422 @@
+\documentclass[dissertation]{softeng}
+
+\usepackage{times}
+
+\title{Producing your MSc dissertation \\ using \LaTeX}
+\author{Jim Davies}
+\college{Kellogg College}
+\organisation{University of Oxford}
+\award{Software and Systems Security}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  The abstract should really really really be between 100 and 200
+  words in length.
+\end{abstract}
+
+\clearpage
+
+\begin{acknowledgements}
+  Thanks.  
+\end{acknowledgements}
+
+\clearpage
+
+\pagenumbering{roman}
+\pagestyle{plain}
+\setcounter{tocdepth}{2}
+
+\tableofcontents
+
+\clearpage
+
+\pagenumbering{arabic}
+\pagestyle{myheadings}
+
+\chapter{Introduction}
+
+This document is not a sample dissertation, but a simple template
+created to illustrate the use of the \verb|softeng| class with
+\LaTeX.  Although the bulk of the information is presented as an
+appendix, you might like to know now that: 
+\begin{itemize}
+\item the \verb|softeng| class is configured for producing a proposal
+  document by default, with sections rather than chapters.  To use it
+  in `dissertation mode', you need to supply the \verb|dissertation|
+  argument, as we have done here at the top of the file.
+\item if you have any problems with the `oxfordlogo' graphic, or if
+  you just prefer a plainer coverpage, you can add the \verb|nologo|
+  option, which has the expected effect. 
+\end{itemize}
+For everything else, take a look at this
+file---\verb|dissertation.tex|---and it may become clear. 
+
+In particular, copy the commands that define \verb|title|,
+\verb|author|, \verb|college|, \verb|organisation|, and \verb|award|
+so that they apply to you.  The last of these should be set to either
+`Software Engineering' or `Software and Systems Security', obviously.
+
+Please do write and tell us if you think that there is something that
+we could have said here that would have saved you time in using
+{\LaTeX} for your dissertation.  This is the first version of the
+class file, and the first version of this document.  We aim to improve
+it, but we'll be able to do that more quickly with your help.
+
+\chapter{Background}
+
+You'll probably want to choose a more specific title for this
+chapter.  It should be between two and ten pages in length (the
+chapter, not the title).  
+
+\chapter{Application and reflection}
+
+In this part of the dissertation you will report and reflect upon your
+project work~\cite{exampleref}.  You might organise this as two, or more,
+separate chapters, representing 40 to 60 pages of material in all.
+
+\chapter{Conclusion}
+
+That's it.  And here comes the bibliography. 
+
+\bibliographystyle{plain}
+\bibliography{template-bibliography}
+
+\appendix
+
+\chapter{Notes on \LaTeX}
+\label{chap:latex}
+
+There are books that you can buy on \LaTeX, but you are unlikely to
+need any of them: the commands mentioned here should see you through.
+If there's something else that you think we should add, let us know!
+
+\section{Letters, words, lines, and paragraphs}
+
+Remember, don't break your chapters up like this unless you really are
+presenting something along the lines of a manual.   
+
+\subsection{Special characters}
+
+{\LaTeX} treats the following characters as special cases: 
+\begin{itemize}\raggedright
+\item \verb|\| is the escape character, and indicates the beginning of
+  a command, as in \verb|\chapter|; if you want a backslash symbol,
+  write \verb|\backslash| \emph{in math mode (see below!)}
+\item \verb|%| comments out the remainder of the line, so if you need
+  a percent symbol, write \verb|\%|
+\item \verb|$| puts you into math mode, which you probably won't need
+  unless you're typesetting some mathematics; if you want a dollar
+  symbol, write \verb|\$|.  If you want the pound sign, type
+  \verb|\pounds|. 
+\item \verb|{| opens a group of characters for interpretation, and
+    \verb|}| closes one.  This can be used to delimit an argument to a
+  command: e.g. \verb|\chapter{Name}|.  It can also be used to limit
+  the scope of some declaration: e.g. 
+  \verb|{\bfseries some text in bold}|.  
+  If you want the braces themselves, you'll need \verb|\{|
+  and \verb|\}|.
+\item \verb|&| is used as a column separator in the \verb|\tabular|
+  environment: see Section~\ref{sec:tabular} below.  If you need an
+  ampersand symbol, you can write \verb|\&|. 
+\item \verb|[| and \verb|]| after a command are used to delimit an
+  optional argument.  If you find that this is happening when you
+  don't want it to, then you can put \verb|\relax| between the command
+  and the opening square bracket---e.g. 
+  \verb|\item \relax [some text in brackets]|
+\item \verb|`| and \verb|'| produce opening and closing quotation
+  marks, respectively; they do the right thing when doubled.  Take
+  care to use these correctly!
+\end{itemize}
+
+\subsection{Breaking}
+
+{\LaTeX} does this kind of thing for you, but you need to show it how
+your text is divided into paragraphs.  Just leave a blank line to do
+this.  If you can't leave a blank line (really?) you can type
+\verb|\par| instead.
+
+In running text, a new paragraph should start with an indented line,
+unless it's the first paragraph after a heading.  This will happen
+automatically.  Don't mess with this: that is, don't redefine
+\verb|\parindent| and \verb|\parskip|.  If you need to tell a specific
+paragraph \emph{not} to indent the first line, and you really mean to
+do that, then you can type \verb|\noindent| just before it starts.  
+
+\begin{itemize}\raggedright
+\item \verb|\\| produces an immediate line break.  Do not use this in
+  running text unless you absolutely have to; never use it to create
+  paragraph breaks---just use a blank line. 
+\item Use \verb|\clearpage| to produce a page break.  You shouldn't
+  really do this kind of thing until you're putting the finishing
+  touches to your document.
+\end{itemize}
+
+If {\LaTeX} is complaining about ``overfull hboxs'', that's probably
+because it can't break a line where it wants to.  If the box in
+question is overfull by more than 10pt (take a look at the typeset
+version and see if you can spot it) then try reorganising the line or
+paragraph.
+
+\subsection{Fonts}
+
+You might not need to insert any font commands in your running text,
+but in case you want to: 
+\begin{itemize}\raggedright
+\item \verb|\emph| puts its argument in emphatic font---usually italic
+  or slanted: e.g.\\ ``\verb|\emph{your} mileage|'' produces
+  ``\emph{your} mileage''.
+\item
+  \verb|\verb| does more than just put its argument in typewriter 
+  font, it renders it verbatim: spaces matter. %
+  Exceptionally, this command requires that its argument be delimited
+  by the next symbol it sees: %
+  e.g.  \texttt{$\mathtt\backslash$verb|st\ uff|} will produce
+  \verb|st uff|.  Also, the argument to
+  \verb|\verb| can't include a linebreak: for that, you need a
+  \verb|verbatim| environment.
+\item \verb|\textbf|, \verb|\textsl|, \verb|\textit|, \verb|\textsf|,
+  and \verb|\texttt| put their arguments in bold, slanted, italic,
+  sansserif, or typewriter font, respectively.
+\item \verb|\bfseries|, \verb|\slshape|, \verb|\itfamily|,
+  \verb|\sffamily|, and \verb|\ttfamily| are the corresponding
+  declarations, and apply for the rest of the current enclosing group.
+\item \verb|\small| and \verb|\large| do what their names suggest: you
+  might want to use \verb|\small| to shrink a table to fit, but
+  otherwise you shouldn't need to use these.  
+\end{itemize}
+
+\section{Environments}
+
+\subsection{Lists}
+
+Environment commands in {\LaTeX} are more like the familiar markup of
+HTML or XML: they have a \verb|\begin| and an \verb|\end|.  
+\begin{itemize}\raggedright
+\item \verb|\begin{enumerate} \item ... \item ... \end{enumerate}|
+  produces an enumerated list, with command \verb|\item| marking the
+  beginning of a new item with a label. 
+\item \verb|\begin{itemize} \item ... \item ... \end{itemize}| does
+  the same, but the labels are all bullets, or dashes, or circles,
+  depending upon how deep you go.
+\item \verb|\|\verb|begin{verbatim} ... \end{verbatim}| renders
+everything inside it, well, in verbatim: in typewriter font, with
+newlines and spaces, and even the special symbols, appearing as they
+are.  This is ideal for presenting program code or model text.
+\item \verb|\begin{quote} ... \end{quote}| indents the enclosed
+  material to the same extent as an itemized or enumerated list.
+\end{itemize}
+The {\LaTeX} \verb|description| environment is also available, but is
+a little awkward in comparison to those above.  A better solution may
+be to use a \verb|\subsubsection| or \verb|\paragraph| command to
+introduce each of the items, if you absolutely have to do this.  
+
+\subsection{Figures and tables}
+\label{sec:tabular}
+
+Figures and tables are \emph{floats} in \LaTeX: they will appear near
+to the surrounding text if they can, but they might also float away
+only to wash up later in the document.  
+\begin{itemize}\raggedright
+\item A figure environment can be used to import a graphic into the
+  document (don't use the archaic {\LaTeX} drawing commands unless you
+  have a good reason to).  Any graphic will do, and you shouldn't
+  need to specify an extension.  
+\begin{verbatim}
+  \begin{figure}[t]
+    \centering
+    \includegraphics{layercake}
+
+    \caption{How to have your cake and eat it}
+    \label{fig:layercake}
+  \end{figure}
+\end{verbatim}
+  The \verb|t| option says `put this at the top of a page'.  \verb|h|
+  says `put it here instead'.  You can add an exclamation mark in each
+  case to (try to) insist: e.g. \verb|t!|.  You shouldn't have to,
+  though. 
+
+  The \verb|\caption| command creates a caption using the supplied
+  text, and the \verb|\label| command defines a label for referring to
+  this figure in the text (see Section~\ref{sec:labelling} below).
+\item The \verb|\includegraphics| command accepts optional arguments
+  in square brackets before the name of the graphic file.  These can
+  be used to determine the size and orientation of the picture.  The
+  most useful are:
+  \begin{itemize}
+  \item \verb|\includegraphics[scale=0.8]{...}| to scale the graphic
+    by, for example, \verb|0.8|, or 80\%.
+  \item \verb|\includegraphics[width=6cm]{...}| to set the
+    width of the graphic to, for example, 6cm.  
+  \item \verb|\includegraphics[height=6cm]{...}| to set the
+    height of the graphic to, for example, 6cm.  
+  \end{itemize}
+\item A table environment is pretty much the same thing, although
+  you're quite likely to be using {\LaTeX}'s table making commands
+  instead of importing a table drawn in another package and exported
+  as a graphic.  
+\begin{verbatim}
+  \begin{table}[t]
+    \centering
+    \begin{tabular}{l|l}
+      Person & Score \\ \hline
+      Susan & 30 \\
+      Peter & 40 
+    \end{tabular}
+    \caption{Tennis score when rain stopped play}
+    \label{tab:tennis}
+  \end{table}
+\end{verbatim}
+\item You can also set tables as displayed material in running text:
+  in this case, you want to use the \verb|tabular| environment,
+  perhaps inserted within a \verb|quote| environment or a
+  \verb|center| environment (note the spelling) to get the alignment
+  correct.
+\begin{verbatim}
+  \begin{quote}
+    \begin{tabular}{l|l}
+      Person & Score \\ \hline
+      Susan & 30 \\
+      Peter & 40 
+    \end{tabular}
+    \caption{Tennis score when rain stopped play}
+    \label{tab:tennis}
+  \end{quote}
+\end{verbatim}
+  produces: 
+  \begin{quote}
+    \begin{tabular}{l|l}
+      Person & Score \\ \hline
+      Susan & 30 \\
+      Peter & 40 
+    \end{tabular}
+  \end{quote}
+  Note that there is no caption here, nor is there a label. 
+\item The \verb|tabular| command takes a `table specification' as a
+  mandatory argument:
+  \begin{itemize}
+  \item \verb|l|, \verb|c|, and \verb|r| declare columns with material
+    to be aligned to the left, centred, and aligned to the right,
+    respectively.
+  \item \verb+|+ denotes a vertical line.
+  \end{itemize}
+  After this argument comes the beginning of the first row. 
+
+  Each row can contain up to $n - 1$ ampersands (`\verb|&|'), where
+  $n$ is the number of columns declared: these act as delimiters
+  between column material.  A row is ended by a double backslash
+  (`\verb|\\|'), which takes an optional argument indicating any
+  additional vertical space required before the next row:
+  e.g. \verb|\\[2cm]|.  A \verb|\hline| after \verb|\\| produces a
+  horizontal rule across all of the columns before the next row.  You
+  can use two adjacent \verb|\hline| commands to produce a double
+  rule.
+\end{itemize}
+
+\section{Sections, labels, references, and citations}
+
+\subsection{Sections}
+
+Your dissertation should be divided into a number of chapters, each
+introduced using a \verb|\chapter| command with a single, mandatory
+argument: the name of the chapter.  For example, this chapter, in the
+appendix of the template document, begins with the command
+\begin{verbatim}
+  \chapter{Notes on \LaTeX}
+\end{verbatim}
+Your chapters can be divided into sections, and into subsections,
+using the \verb|\section| and \verb|subsection| commands,
+respectively.  Again, these take the name of the section or subsection
+as their single, mandatory argument.  
+
+Further levels of sectioning are available---\verb|\subsubsection|,
+\verb|paragraph|, and \verb|subparagraph|---but try not to use these
+unless what you are writing is intended to resemble a reference
+manual.   
+
+\subsection{Labels and (cross-)references}
+\label{sec:labelling}
+
+You should use labels to identify any chapters, sections, subsections,
+items (in enumerated lists), figures, or tables that you wish to refer
+to.  You can do this using the \verb|\label| command, with whatever
+text you wish to use as a key: for example, 
+\begin{verbatim}
+  \chapter{Notes on \LaTeX}
+  \label{chap:latex}
+\end{verbatim}
+might be an appropriate label for this chapter.  You can then refer to
+this chapter by writing 
+\begin{verbatim}
+  Chapter~\ref{chap:latex}
+\end{verbatim}
+and {\LaTeX} will insert the appropriate number (provided that you've
+run it at least once since inserting the corresponding \verb|label|).
+Since we're in the first chapter of the Appendix here, this is going
+to produce 
+\begin{quote}
+  Chapter~\ref{chap:latex}
+\end{quote}
+For floats---figures and tables---you should insert the \verb|\label|
+command after the \verb|\caption|.  Note that since you are referring
+to a specific item, you should capitalise `Chapter', `Section',
+`Figure', or `Table'.  It is sufficient to say `Section' when
+referring to smaller divisions: e.g. subsections. 
+
+\subsection{Citations}
+
+Although you can construct and maintain a bibliography by hand, it is
+far more efficient to make use of the \verb|BibTeX| program.  To do
+this, you create a \verb|.bib| file to hold the references that you
+might wish to use.  You then place the commands
+\begin{verbatim}
+  \bibliographystyle{plain}
+  \bibliography{example}
+\end{verbatim}
+at the appropriate point in your document, where \verb|example| is
+the name of your \verb|.bib| file (the extension is not required). 
+
+Each entry in your \verb|.bib| file will start with a key (after an
+\verb|@| command identifying the document type).  For example,  
+\begin{verbatim}
+@article{exampleref,
+  author = {Barry Andrews},
+  title = {{Preparing an MSc Project Proposal}},
+  journal = {What Project? Monthly},
+  publisher = {Random House},
+  year = {2009}
+}
+\end{verbatim}
+The key here is `\verb|exampleref|'.  We can now `cite' this article
+in our document, simply by using this key as an argument to the
+\verb|\cite| command.   For example,
+\begin{verbatim}
+most of this information will be useful to those preparing a project
+proposal~\cite{exampleref}
+\end{verbatim}
+will produce
+\begin{quote}\raggedright
+  most of this information will be useful to those preparing a project
+  proposal~\cite{exampleref}
+\end{quote}
+To cite more than one reference at the same point, simply include the
+respective keys in the argument to \verb|\cite|, separated by commas.
+
+\section{Extras}
+
+If you want to use mathematics, you should obtain the \verb|zed.sty|
+package: email \url{Jim.Davies@comlab.ox.ac.uk} to ask.  If you want
+to use fonts other than the default \emph{Computer Modern} (CM), then
+you might like to try adding
+\begin{verbatim}
+  \usepackage{times}
+\end{verbatim}
+between then \verb|\documentclass| and \verb|\begin{document}|
+  commands.  \verb|newcent|, \verb|utopia|, \verb|palatino| are other
+  packages that define alternative fontsets.  It's probably best to
+  stick with CM or Times, however.  
+
+\end{document}
+
