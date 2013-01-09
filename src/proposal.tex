@@ -54,8 +54,8 @@ tests, which test functionality at the finest level of granularity:
 typically a method or function. Component tests sit somewhere in
 between the two ends of the spectrum, and might test interactions
 between modules or classes of an application, or perhaps the
-interaction between a web server and a database. A system test may run
-in an test environment that is an exact replica of the production
+interaction between a web server and a database. A system test may
+require a test environment that is an exact replica of the production
 system, whereas a unit test may be run on the developer's workstation
 each time the software is rebuilt.
 
@@ -101,7 +101,10 @@ allow ``expectations'' about the way the SUT interacts with the DOC to
 be expressed and later verified. Mocks are a powerful tool which allow
 one to write concise, maintainable unit tests that are less prone to
 ``brittle test syndrome'' than tests written differently
-\cite{meszaros:xunit}.
+\cite{meszaros:xunit}. JMock \cite{www:jmock} is an excellent example
+of a mocking library that automatically generates mock objects and
+provides a very convenient method for specifying and evaluating
+expectations on those mocks.
 
 % Now I should transition to talking about unit testing in functional
 % programming languages
@@ -109,17 +112,50 @@ one to write concise, maintainable unit tests that are less prone to
 While most of the literature about unit testing and tools for unit
 testing are written about testing object oriented languages, many of
 these techniques also apply directly to functional programming
-languages.
+languages. HUnit \cite{www:hunit} and OUnit \cite{www:ounit} provide
+unit testing frameworks for Haskell and OCaml, respectively. Kaputt
+\cite{www:kaputt} is another unit testing framework for OCaml which
+provides a variety of modules to assist in writing tests, as well as
+prototypical mocking combinators to assist in manually writing mock
+functions. Unfortunately, Kaputt's mocking functions require the user
+to manually write out mocks, and Kaputt doesn't provide the powerful
+expectation specification mechanisms that other mocking libraries like
+JMock \cite{www:jmock} provide.
+% (Somewhere I need to talk about why Kaputt's mocking is not sufficiently powerful.)
 
-In fact, pure, statically typed functional programming languages lend
-themselves to additional testing techniques that aren't as easily
-applied to OO languages. (Talk about quickcheck, factoring pure from
-side-effecting code).
+% Talk about quickcheck, factoring pure from side-effecting code.
+In fact, functional programming languages often lend themselves to
+additional testing techniques that aren't as easily applied to object
+oriented languages. Haskell and, to a lesser extent, OCaml, both have
+access to a tool called QuickCheck \cite{canou:ocaml_random_test}
+\cite{claessen:quickcheck}, which test the properties of functions by
+generating random test inputs based on the type of the function under
+test. Haskell unit testing in particular benefits from Haskell's
+purity, or freedom from side effects. Because all side effects in
+Haskell must be encapsulated in monads, it is easy to identify pure,
+side effect free functions for which tests that don't require test
+doubles are easy to write. Most object oriented languages don't
+provide this level of surety about the lack of side effects in a
+function.
 
-(Talk about how the above techniques don't always apply simply because
-of the nature of the application domain or the way in which a legacy
-application was written, and bring us back to why and how mocks could
-be useful in a functional programming language such as OCaml.)
+%% Talk about how the above techniques don't always apply simply
+%% because of the nature of the application domain or the way in which
+%% a legacy application was written, and bring us back to why and how
+%% mocks could be useful in a functional programming language such as
+%% OCaml.
+
+Most functional languages don't enforce the level of purity that
+Haskell does. OCaml, for instance, does allow for mutable state, and
+doesn't force the programmer to separate side effecting code from
+referentially transparent code. So while OCaml encourages good
+programming practices such as separating referentially transparent
+code from side effecting code, and minimising mutable state, it
+doesn't enforce these practices. Furthermore, some application domains
+are by their nature more prone to requiring a large portion of the
+code base to produce or deal with side effects. In situations like
+these, the ability to easily swap out hard-to-test dependencies with
+mechanically generated test doubles is very important to the
+developer who wants to write good test cases quickly and easily.
 
 \section{Proposed work}
 
