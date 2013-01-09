@@ -9,7 +9,7 @@ all: $(PDF)
 PHONY: spellcheck
 
 spellcheck:
-	aspell -c proposal.tex -d en_GB
+	aspell -d en_GB -p aspell.en.pws -c proposal.tex
 
 clean:
 	latexmk -c
