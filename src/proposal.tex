@@ -84,14 +84,26 @@ functions to help the user write test cases, annotations to help
 organise these test cases into larger test suites, and test harnesses
 to handle test running and status reporting.
 
-A typical problem with writing unit tests is that, for various
-reasons, some code is just hard to test. This is often the case when
-the depended-on component (DOC) of the system under test (SUT)
-performs some side-effecting operation that is not valid in the test
-scenario, or is otherwise impossible to run from within the test
+A common problem with writing unit tests is that, for various reasons,
+some code is just hard to test. This is often the case when the
+depended-on component (DOC) of the system under test (SUT) performs
+some side-effecting operation that is not valid in the test scenario,
+or is otherwise impossible to run from within the test
 harness. Hard-to-test code requires one to refactor the SUT so that
 the hard-to-test DOC can be replaced by a test double
+\cite{meszaros:xunit}. This test double might be a dummy object (such
+as Java's ``null'', which fulfils the DOC's interface but doesn't
+implement it), a test spy (which implements the DOC's interface and
+simply records each method access for later analysis), or a mock
+object. Mocks are a powerful type of test double which allow
+implementations to be easily specified in the test case; they also
+allow ``expectations'' about the way the SUT interacts with the DOC to
+be expressed and later verified. Mocks are a powerful tool which allow
+one to write concise, maintainable unit tests that are less prone to
+``brittle test syndrome'' than tests written differently
 \cite{meszaros:xunit}.
+
+
 
 \section{Proposed work}
 
