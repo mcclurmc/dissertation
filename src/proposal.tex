@@ -6,7 +6,7 @@
 \author{Mike McClurg}
 \organisation{University of Oxford}
 \college{Kellogg College}
-\award{Software Engineering} 
+\award{Software Engineering}
 
 \date{\today}
 
@@ -15,46 +15,114 @@
 \maketitle
 
 \begin{abstract}
-You should include a 100 to 200 word abstract.
+
+  %% You should include a 100 to 200 word abstract.
+
+  Object mocking is a technique to assist programmers in writing unit
+  tests, by replacing hard-to-test dependencies with ``mock''
+  implementations of those dependencies. A mock object allows the
+  developer to set certain expectations about how the system under test
+  will interact with the dependency, and then verify that these
+  expectations hold true at the end of the test. While this technique
+  was developed as a test design pattern for object oriented
+  languages, it can also useful for functional programming languages,
+  especially for applications in which hard-to-test side effects can't
+  easily be factored out of pure functions. This dissertation will
+  explore the current state of the art tools and techniques for unit
+  testing and mock object generation in object oriented languages. It
+  will make the case that these techniques can be of use in functional
+  programming languages, and it will describe the implementation and
+  use of a new mocking library for the OCaml programming language.
+
+  % ... Alas, functional languages are not immune to ...
+
 \end{abstract}
- 
+
 \section{Area of study}
 
-You should provide a brief account of the application domain: the
-situation that you are going to explore, the software that you are
-going to develop, or the problem that you wish to address.  This
-section should be one or two pages long. 
+%% You should provide a brief account of the application domain: the
+%% situation that you are going to explore, the software that you are
+%% going to develop, or the problem that you wish to address.  This
+%% section should be one or two pages long.
+
+Testing is an important part of software development. Software tests
+are often categorised as either system, component, or unit
+tests. These categories represent a spectrum of granularity. Systems
+tests represent the broadest granularity, and are meant to test the
+entire system as a whole. On the other end of the spectrum are unit
+tests, which test functionality at the finest level of granularity:
+typically a method or function. Component tests sit somewhere in
+between the two ends of the spectrum, and might test interactions
+between modules or classes of an application, or perhaps the
+interaction between a web server and a database. A system test may run
+in an test environment that is an exact replica of the production
+system, whereas a unit test may be run on the developer's workstation
+each time the software is rebuilt.
+
+%% Systems tests test the entire system as a whole; for instance, a
+%% system test for a web application may duplicate an entire production
+%% environment to test the interaction of system components from end to
+%% end. (System tests are meant to test the entire system as a whole; for
+%% instance, a system test of a server virtualization system might
+%% install the virtualization system on two physical hosts, install a
+%% virtual machine on one of the hosts, and then assert that this virtual
+%% machine can successfully migrate to the other physical host.)
+%% Component tests are meant to test the interactions between individual
+%% components of the system. These are distinct from systems test, which
+%% test all the components of the system
+
+Recent trends in Agile development, such as Continuous Integration
+\cite{humble:continuous} and Test Driven Development \cite{beck:tdd},
+have placed a greater emphasis on unit testing. Consequentially, many
+tools and libraries have been developed to assist programmers in
+writing these tests. Many of these libraries, such as JUnit
+\cite{www:junit} for Java, NUnit \cite{www:nunit} for .NET, and OUnit
+\cite{www:ounit} for OCaml, follow the xUnit patterns of test
+development described by Meszaros \cite{meszaros:xunit}. This family
+of libraries typically provides a set of convenient assertion
+functions to help the user write test cases, annotations to help
+organise these test cases into larger test suites, and test harnesses
+to handle test running and status reporting.
+
+A typical problem with writing unit tests is that, for various
+reasons, some code is just hard to test. This is often the case when
+the depended-on component (DOC) of the system under test (SUT)
+performs some side-effecting operation that is not valid in the test
+scenario, or is otherwise impossible to run from within the test
+harness. Hard-to-test code requires one to refactor the SUT so that
+the hard-to-test DOC can be replaced by a test double
+\cite{meszaros:xunit}.
 
 \section{Proposed work}
 
-You should explain what you intend to do, how you propose to do it,
-and what you expect to achieve in terms of outcomes.  It should be
-clear from your explanation:
-\begin{itemize}
-\item which aspects of the situation, system, or problem that you intend
-  to address---the intended scope of your project;
-\item which principles, methods, tools, or techniques you intend to
-  apply;
-\item what you expect to be able to report, and how this will serve to
-  demonstrate your mastery of the subject.
-\end{itemize}
-This section also should be one or two pages long. 
+%% You should explain what you intend to do, how you propose to do it,
+%% and what you expect to achieve in terms of outcomes.  It should be
+%% clear from your explanation:
+%% \begin{itemize}
+%% \item which aspects of the situation, system, or problem that you intend
+%%   to address---the intended scope of your project;
+%% \item which principles, methods, tools, or techniques you intend to
+%%   apply;
+%% \item what you expect to be able to report, and how this will serve to
+%%   demonstrate your mastery of the subject.
+%% \end{itemize}
+%% This section also should be one or two pages long.
 
 \section{Project plan}
 
-You should explain the order in which you will address the various
-aspects of the work, a realistic allocation of time to each task, and
-the dates by which each task should be completed.  You should list key
-milestones and interim outputs or results, and explain what actions
-would be taken if some of these could not be achieved: what would you
-do instead?   This section should be between half a page and perhaps a
-whole page in length.  
+%% You should explain the order in which you will address the various
+%% aspects of the work, a realistic allocation of time to each task, and
+%% the dates by which each task should be completed.  You should list key
+%% milestones and interim outputs or results, and explain what actions
+%% would be taken if some of these could not be achieved: what would you
+%% do instead?   This section should be between half a page and perhaps a
+%% whole page in length.
 
 \section{Dissertation structure}
 
-You should describe the broad organisation of your dissertation, an
-outline table of contents, including chapter headings and subheadings
-would be fine.
+%% You should describe the broad organisation of your dissertation, an
+%% outline table of contents, including chapter headings and subheadings
+%% would be fine.
 
 \nocite{*}
 \bibliographystyle{plain}
