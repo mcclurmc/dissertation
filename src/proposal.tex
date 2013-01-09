@@ -92,10 +92,10 @@ or is otherwise impossible to run from within the test
 harness. Hard-to-test code requires one to refactor the SUT so that
 the hard-to-test DOC can be replaced by a test double
 \cite{meszaros:xunit}. This test double might be a dummy object (such
-as Java's ``null'', which fulfils the DOC's interface but doesn't
-implement it), a test spy (which implements the DOC's interface and
-simply records each method access for later analysis), or a mock
-object. Mocks are a powerful type of test double which allow
+as Java's \verb|null| object, which fulfils the DOC's interface but
+doesn't implement it), a test spy (which implements the DOC's
+interface and simply records each method access for later analysis),
+or a mock object. Mocks are a powerful type of test double which allow
 implementations to be easily specified in the test case; they also
 allow ``expectations'' about the way the SUT interacts with the DOC to
 be expressed and later verified. Mocks are a powerful tool which allow
@@ -103,7 +103,23 @@ one to write concise, maintainable unit tests that are less prone to
 ``brittle test syndrome'' than tests written differently
 \cite{meszaros:xunit}.
 
+% Now I should transition to talking about unit testing in functional
+% programming languages
 
+While most of the literature about unit testing and tools for unit
+testing are written about testing object oriented languages, many of
+these techniques also apply directly to functional programming
+languages.
+
+In fact, pure, statically typed functional programming languages lend
+themselves to additional testing techniques that aren't as easily
+applied to OO languages. (Talk about quickcheck, factoring pure from
+side-effecting code).
+
+(Talk about how the above techniques don't always apply simply because
+of the nature of the application domain or the way in which a legacy
+application was written, and bring us back to why and how mocks could
+be useful in a functional programming language such as OCaml.)
 
 \section{Proposed work}
 
