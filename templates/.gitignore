@@ -1,1 +1,9 @@
 word
+*.aux
+*.bbl
+*.log
+*.pdf
+*.dvi
+*.blg
+*.fdb_latexmk
+*.bak
