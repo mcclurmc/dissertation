@@ -1,6 +1,7 @@
 \documentclass[proposal]{softeng}
 
 \usepackage{times}
+\usepackage{outline}
 
 \title{MSc Project Proposal}
 \author{Mike McClurg}
@@ -83,6 +84,11 @@ of libraries typically provides a set of convenient assertion
 functions to help the user write test cases, annotations to help
 organise these test cases into larger test suites, and test harnesses
 to handle test running and status reporting.
+
+XXX Need more examples of mocking to prove motivation. Lead better
+into OO to functional programming.
+
+XXX What are dependencies? (DOCs) Databases, etc.
 
 A common problem with writing unit tests is that, for various reasons,
 some code is just hard to test. This is often the case when the
@@ -196,11 +202,17 @@ and macro facility called camlp4 \cite{www:reading_camlp4}. As a
 preprocessor, camlp4 is much more akin to Lisp's syntax macros than to
 C's preprocessor directives, providing the ability to write syntax
 extensions as well as direct access to a program's untyped AST. Camlp4
-will be powerful enough to do compile-time mock generation, as well as
+is powerful enough to do compile-time mock generation, as well as
 allow us to write just enough extra syntax to make writing and using
 mock and expectations convenient.
 
+- explaination of the technical difficulties overcome in writing library
 
+- comparison of mocking with Kaputt to mocking with MoCaml
+
+- detailed treatment of mocking technique and how it can be usefully applied to OCaml
+
+XXX Specifically what my library will do. ``Three things'' that it does.
 
 \section{Project plan}
 
@@ -212,11 +224,65 @@ mock and expectations convenient.
 %% do instead?   This section should be between half a page and perhaps a
 %% whole page in length.
 
+As a rough estimate, I expect that the time spent on my dissertation
+will break down as follows.
+
+XXX Needs timeline and monthly granularity
+
+\begin{itemize}
+  \item Literature survey (5\%)
+  \item MoCaml library implementation (40\%)
+  \item Write dissertation (50\%)
+\end{itemize}
+
 \section{Dissertation structure}
 
 %% You should describe the broad organisation of your dissertation, an
 %% outline table of contents, including chapter headings and subheadings
 %% would be fine.
+
+\begin{outline}
+\item Introduction
+  \begin{outline}
+  \item motivation
+  \item objectives
+  \item expected contribution
+  \item organisation
+  \end{outline}
+\item Background
+  \begin{outline}
+  \item Unit testing, and problem with hard-to-test dependencies
+  \item Test doubles, especially mocks
+  \item Functional languages, specfically testing
+  \item State of current tools for testing, especially in
+    functional languages, and again, especially in OCaml
+  \item Existing tools, capabilities in OCaml that I can base my library on
+  \end{outline}
+\item Application (XXX maybe break up into multiple chapters)
+  \begin{outline}
+  \item Brief explaination of camlp4 preprocessing technique that
+    will be used (camlp4 is a bit of a black art!)
+  \item Treatment of OCaml's unique module structure and type
+    system, which is both very powerful for this application, and at
+    the same time difficult to work around.
+  \item Explanation of my mock and expectation implementation. The
+    techniques that I produce for my library will be the main
+    academic contribution of my dissertation.
+  \item Comparison of tests written using a) no mocking technique,
+    b) Kaputt mocking library, c) MoCaml mocking
+    library. Demonstrate pros and cons of each technique, and
+    describe when you would prefer one over the other. XXX Might want an evaluation chapter.
+  \end{outline}
+\item Reflection
+  \begin{outline}
+  \item Examples of using my library. There will probably be running
+    examples throughout the dissertation.
+  \item Stretch goal: case study of MoCaml used in industry. My team
+    at work will hopefully find this library useful. If we can make
+    use of it in time for my dissertation, it would be good to
+    describe how we used it.
+  \end{outline}
+\end{outline}
 
 \nocite{*}
 \bibliographystyle{plain}
