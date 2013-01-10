@@ -172,6 +172,36 @@ developer who wants to write good test cases quickly and easily.
 %% \end{itemize}
 %% This section also should be one or two pages long.
 
+The main output of my project will be MoCaml, a mocking library for
+OCaml which mechanically generates mocks and provides an expecataion
+framework which will make it easy for developers to write test cases
+using these mocks. This library should integrate well with existing
+OCaml unit testing libraries, and will likely build upon them.
+
+As mentioned previously, the Kaputt unit testing library does have a
+set of helper functions for manually creating mocks, and for
+performing limited expectation checking on these mocks. This library
+is a step in the right direction for OCaml, but it is incomplete when
+compared against libraries such as Java's JMock, which have automatic
+mock generation capabilities, as well as a convenient and powerful
+syntax for specifying expectations. Kaputt's existing mocking helper
+functions may be useful as a starting point for automatically
+generating mocks in MoCaml, though the Kaputt mock library is not
+required for implementing MoCaml.
+
+The JMock library makes extensive use of Java's reflection
+capabilities to generate mock objects at runtime. While the OCaml
+language lacks reflection, it does have a very powerful preprossessor
+and macro facility called camlp4 \cite{www:reading_camlp4}. As a
+preprocessor, camlp4 is much more akin to Lisp's syntax macros than to
+C's preprocessor directives, providing the ability to write syntax
+extensions as well as direct access to a program's untyped AST. Camlp4
+will be powerful enough to do compile-time mock generation, as well as
+allow us to write just enough extra syntax to make writing and using
+mock and expectations convenient.
+
+
+
 \section{Project plan}
 
 %% You should explain the order in which you will address the various
