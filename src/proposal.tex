@@ -24,18 +24,19 @@
   Object mocking is a technique to assist programmers in writing unit
   tests, by replacing hard-to-test dependencies with ``mock''
   implementations of those dependencies. A mock object allows the
-  developer to set certain expectations about how the system under test
-  will interact with the dependency, and then verify that these
+  developer to set certain expectations about how the system under
+  test will interact with the dependency, and then verify that these
   expectations hold true at the end of the test. While this technique
   was developed as a test design pattern for object oriented
-  languages, it can also useful for functional programming languages,
-  especially for applications in which hard-to-test side effects can't
-  easily be factored out of pure functions. This dissertation will
-  explore the current state of the art tools and techniques for unit
-  testing and mock object generation in object oriented languages. It
-  will make the case that these techniques can be of use in functional
-  programming languages, and it will describe the implementation and
-  use of a new mocking library for the OCaml programming language.
+  languages, it can also be useful for functional programming
+  languages, especially for applications in which hard-to-test side
+  effects can't easily be factored out of pure functions. This
+  dissertation will explore the current state of the art tools and
+  techniques for unit testing and mock object generation in object
+  oriented languages. It will make the case that these techniques can
+  be of use in functional programming languages, and it will describe
+  the implementation and use of a new mocking library for the OCaml
+  programming language.
 
   % ... Alas, functional languages are not immune to ...
 
@@ -75,8 +76,8 @@ each time the software is rebuilt.
 %% distinct from systems test, which test all the components of the
 %% system
 
-Recent trends in Agile development, such as Continuous Integration
-\cite{humble:continuous} and Test Driven Development \cite{beck:tdd},
+Recent trends in Agile development, such as continuous integration
+\cite{humble:continuous} and test driven development \cite{beck:tdd},
 have placed a greater emphasis on unit testing. Consequentially, many
 tools and libraries have been developed to assist programmers in
 writing these tests. Many of these libraries, such as JUnit
