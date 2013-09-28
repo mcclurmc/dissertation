@@ -1,0 +1,64 @@
+% Created 2013-01-10 Thu 11:02
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{soul}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{latexsym}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\tolerance=1000
+\providecommand{\alert}[1]{\textbf{#1}}
+
+\title{structure}
+\author{Mike McClurg}
+\date{\today}
+\hypersetup{
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs Org-mode version 7.8.11}}
+
+\begin{document}
+
+\maketitle
+
+\setcounter{tocdepth}{3}
+\tableofcontents
+\vspace*{1cm}
+\section{Introduction}
+\label{sec-1}
+\section{Background}
+\label{sec-2}
+\subsection{Unit testing}
+\label{sec-2-1}
+\subsection{Test doubles, especially mocks}
+\label{sec-2-2}
+\subsection{Functional languages, specfically testing}
+\label{sec-2-3}
+\subsection{State of current tools for testing, especially in functional languages, and again, especially in OCaml}
+\label{sec-2-4}
+\section{Application}
+\label{sec-3}
+\subsection{Brief explaination of camlp4 preprocessing technique that will be used (camlp4 is a bit of a black art!)}
+\label{sec-3-1}
+\subsection{Treatment of OCaml's unique module structure and type system, which is both very powerful for this application, and at the same time difficult to work around.}
+\label{sec-3-2}
+\subsection{Explanation of my mock and expectation implementation. The techniques that I produce for my library will be the main academic contribution of my dissertation.}
+\label{sec-3-3}
+\section{Reflection}
+\label{sec-4}
+\subsection{Examples of using my library. There will probably be running examples throughout the dissertation.}
+\label{sec-4-1}
+\subsection{Comparison of tests written using a) no mocking technique, b) Kaputt mocking library, c) MoCaml mocking library. Demonstrate pros and cons of each technique, and describe when you would prefer one over the other.}
+\label{sec-4-2}
+\subsection{Stretch goal: case study of MoCaml used in industry. My team at work will hopefully find this library useful. If we can make use of it in time for my dissertation, it would be good to describe how we used it.}
+\label{sec-4-3}
+
+\end{document}

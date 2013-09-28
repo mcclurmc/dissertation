@@ -1,0 +1,16 @@
+* Introduction
+* Background
+** Unit testing
+** Test doubles, especially mocks
+** Functional languages, specfically testing
+** State of current tools for testing, especially in functional languages, and again, especially in OCaml
+* Application
+** Brief explaination of camlp4 preprocessing technique that will be used (camlp4 is a bit of a black art!)
+** Treatment of OCaml's unique module structure and type system, which is both very powerful for this application, and at the same time difficult to work around.
+** Explanation of my mock and expectation implementation. The techniques that I produce for my library will be the main academic contribution of my dissertation.
+* Reflection
+** Examples of using my library. There will probably be running examples throughout the dissertation.
+** Comparison of tests written using a) no mocking technique, b) Kaputt mocking library, c) MoCaml mocking library. Demonstrate pros and cons of each technique, and describe when you would prefer one over the other.
+** Stretch goal: case study of MoCaml used in industry. My team at work will hopefully find this library useful. If we can make use of it in time for my dissertation, it would be good to describe how we used it.
+
+
