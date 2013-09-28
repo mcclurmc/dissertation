@@ -1,0 +1,64 @@
+_Project Ideas_
+
+* OCaml mocking library
+
+- Convo with Nicki
+  - Nicki wants me to write a lot of background on unit testing and
+    mocking. Explain the state of the art, and what alternatives there
+    are to mocking. The point of this is to prove that mocking is the
+    right choice for a particular problem. I think it might be more
+    useful to explain the state of testing in functional programming
+    languages, and to take the angle that this is a good approach to
+    use for legacy code which hasn't been written in a way that makes
+    it easy to remove hard-to-test or side-effecting dependencies.
+- Proposal
+  - Background
+    - Testing practices
+      - Describe unit testing; testing patterns; test doubles; do a
+        comparison between mocking and the other test double patterns
+      - Describe unit testing in terms of xUnit terms (DOC, SOC, etc)
+      - Describe the use cases for mocking: when it's appropriate, why
+        it is useful
+      - Describe my specific scenario with Xapi and Xenops to use as a case study
+      - Testing facilities for functional langauges
+	- Quickcheck, *Unit, Criterion
+	- OCaml specific: OUnit, Kaputt
+      - Facilities for dependency injection, or just swapping
+        implementations of interfaces
+	- OCaml: first-class modules, functorization
+	- Haskell: type classes
+  - Develop mocking library, similar to JMock
+    - Preprocessing of OCaml to generate mocks and expectations
+    - 
+  - Develop design patterns for unit testing in OCaml
+    - Functorization for DOC factorization
+    - First class modules for DOC factorization
+  - Success criteria for project, dissertation (reflection part)
+    - Library is completed such that it is useable for testing
+    - 
+  - Write dissertation on experience 
+
+** Proposal
+
+- Area of study
+  - 
+- Proposed work
+  - 
+- Project plan
+  - 
+- Dissertation structure
+  - 
+
+* Paper review
+
+** Passwords
+  - Fig 1, methods of password disclosure, is a good graphical way to
+    show the reader "where we are".
+  - p.16 states that last names approximate a Poisson distribution,
+    but gives no source or proof.
+  - Good use of case studies (Palin)
+  - Good use of formalism, by showing flow charts, statistics, UML
+    diagrams, and generally explaining methodology in a rigorous way.
+  - It seems that the "Likelihood of knowledge of answer" table was
+    just an educated guess, but this was never stated.
+  - 
