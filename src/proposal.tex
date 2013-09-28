@@ -164,18 +164,18 @@ are outlined in blue.
 Figure \ref{fig:missile_mock} shows missile launcher example again, but
 this time with a mock object replacing the original DOC. We see that
 the test suite on the left performs the operations setup, exercise,
-verify, and teardown while performing tests against the SUT (missile
+verify, and tear-down while performing tests against the SUT (missile
 launch interface). In the setup phase, the test suite creates the mock
 object to replace the hard-to-test DOC (missile launcher). In the
 creation of the mock, the test suite specifies a number of
 expectations on how that mock should act, and how the SUT should
-interact witih it. For instance, one test in the test suite may expect
+interact with it. For instance, one test in the test suite may expect
 that only after the two launch buttons on the interface are pressed
 within $N$ milliseconds, the mock missile launcher receives the
 ``fire'' signal from the interface. After creating a mock, the test
 then installs it into the SUT as a replacement for the DOC. The test
 suite then exercises the test, and verifies that the mock's
-expectations were satisfied during the test. The teardown phase of the
+expectations were satisfied during the test. The tear-down phase of the
 test is not demonstrated in this figure.
 
 % Psuedo language for expectations on the missile launcher:
@@ -357,9 +357,9 @@ complete. The first few chapters of my dissertation will not depend on
 a completed library, and so can be completed simultaneously. I have
 accounted for this concurrent effort in my estimates above.
 
-I believe that the estimates above are acheivable, and that they leave
+I believe that the estimates above are achievable, and that they leave
 room for slippage, because much of the dissertation will be
-independent of having completed the MoCaml library. If unforseen
+independent of having completed the MoCaml library. If unforeseen
 circumstances prevent me from spending as much time on this work as I
 would like to, I will still be able to complete my work in time for
 the next deadline in the Michaelmas Term.
