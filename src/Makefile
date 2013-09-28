@@ -21,7 +21,12 @@ pvc:
 
 .PHONY: spellcheck
 spellcheck:
-	aspell -d en_GB -p aspell.en.pws -c *.tex
+	aspell -d en_GB -p aspell.en.pws -c application.tex
+	aspell -d en_GB -p aspell.en.pws -c background.tex
+	aspell -d en_GB -p aspell.en.pws -c intro.tex
+	aspell -d en_GB -p aspell.en.pws -c main.tex
+	aspell -d en_GB -p aspell.en.pws -c proposal.tex
+	aspell -d en_GB -p aspell.en.pws -c reflection.tex
 
 .PHONY:
 clean:
