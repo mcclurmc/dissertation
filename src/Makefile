@@ -14,7 +14,7 @@ main.pdf: $(MAIN_TEX) $(INCLUDED_TEX) bibliography.bib
 proposal.pdf: bibliography.bib
 
 %.pdf: %.tex
-	latexmk -f -bibtex -silent -pdf $<
+	latexmk $(LATEXMK_OPTS) $<
 
 pvc:
 	latexmk $(LATEXMK_OPTS) -pvc $(MAIN_TEX)
