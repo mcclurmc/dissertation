@@ -1,20 +1,33 @@
 
-PDF=proposal.pdf
+# Add any included tex files here:
+INCLUDED_TEX=intro.tex background.tex application.tex reflection.tex
+MAIN_TEX=main.tex
 
-all: $(PDF)
+OUTS=main.pdf # proposal.pdf
 
-%.pdf:	%.tex bibliography.bib
+LATEXMK_OPTS=-f -bibtex -silent -pdf
+
+all: $(OUTS)
+
+main.pdf: $(MAIN_TEX) $(INCLUDED_TEX) bibliography.bib
+
+proposal.pdf: bibliography.bib
+
+%.pdf: %.tex
 	latexmk -f -bibtex -silent -pdf $<
 
-PHONY: spellcheck
+pvc:
+	latexmk $(LATEXMK_OPTS) -pvc $(MAIN_TEX)
 
+.PHONY: spellcheck
 spellcheck:
-	aspell -d en_GB -p aspell.en.pws -c proposal.tex
+	aspell -d en_GB -p aspell.en.pws -c *.tex
 
+.PHONY:
 clean:
 	latexmk -c
 
+.PHONY:
 clean-all:
 	latexmk -C
-
-
+	rm -f *.bbl

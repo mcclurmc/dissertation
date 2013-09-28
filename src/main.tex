@@ -1,0 +1,61 @@
+\documentclass[dissertation]{softeng}
+
+\usepackage{times}
+\usepackage{outline}
+\usepackage{ulem}
+\usepackage{mdwlist}
+
+%% XXX title needs work
+\title{MoCaml: automatic dependency generation for OCaml}
+\author{Mike McClurg}
+\organisation{University of Oxford}
+\college{Kellogg College}
+\award{Software Engineering}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+  %% You should include a 100 to 200 word abstract.
+
+  Object mocking is a technique to assist programmers in writing unit
+  tests, by replacing hard-to-test dependencies with ``mock''
+  implementations of those dependencies. A mock object allows the
+  developer to set certain expectations about how the system under
+  test will interact with the dependency, and then verify that these
+  expectations hold true at the end of the test. While this technique
+  was developed as a test design pattern for object oriented
+  languages, it can also be useful for functional programming
+  languages, especially for applications in which hard-to-test side
+  effects can't easily be factored out of pure functions. This
+  dissertation will explore the current state of the art tools and
+  techniques for unit testing and mock object generation in object
+  oriented languages. It will make the case that these techniques can
+  be of use in functional programming languages, and it will describe
+  the implementation and use of a new mocking library for the OCaml
+  programming language.
+
+  % ... Alas, functional languages are not immune to ...
+
+\end{abstract}
+
+\newpage
+
+\tableofcontents
+
+%% Include chapters
+\include{intro}
+\include{background}
+\include{application}
+\include{reflection}
+
+%% Bibliography
+%\nocite{*}
+\bibliographystyle{plain}
+\bibliography{bibliography}
+
+\end{document}
