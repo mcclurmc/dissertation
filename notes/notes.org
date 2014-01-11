@@ -1,0 +1,31 @@
+_Notes for MoCaml thesis_
+
+* <2013-12-03 Tue> Case study for dep injection with first class modules
+  - Wrote test for Xapi that needed DI. Had to add a first class
+    module parameter to SUT (License_init.initialise).
+    - Awkward: had to modify SUT to be testable. Had to remove label
+      from final arg so later calls without injected module wouldn't
+      look like partial applications.
+    - It's been so long since I've looked at this thesis... Was I
+      planning on automatically rewriting the SUT to replace the DOC?
+  - Also used reference of first class module to inject dependency
+    into whole module, without having to modify SUT signatures.
+
+(* Dependency injection for unit tests *)
+ module type V6clientS = module type of V6client
+ let v6client = ref (module V6client : V6clientS)
+
+(* Injection via function parameters. Requires change to function body
+   and signature, but allows for changing an individual function's
+   dependency (not usually what you want to do, but useful) *)
+let initialise ?(testV6client=(module V6client : V6clientS)) ~__context host =
+   let module V6client = (val testV6client : V6clientS) in
+   ...
+
+(* Injection via reference in module. Doesn't require function
+   signature changes, does require each method changed and limits you
+   to changing dependency throughout entire module, not just
+   individual functions (which is usually okay) *)
+let initialise ~__context ~host =
+   let module V6client = (val !v6client : V6clientS) in
+   ...
