@@ -3,7 +3,7 @@
 INCLUDED_TEX=intro.tex background.tex application.tex reflection.tex
 MAIN_TEX=main.tex
 
-OUTS=main.pdf # proposal.pdf
+OUTS=main.pdf proposal.pdf
 
 LATEXMK_OPTS=-f -bibtex -silent -pdf
 
