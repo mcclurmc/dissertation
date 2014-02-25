@@ -8,7 +8,7 @@ let () =
 #use "topfind";;
 #require "str";;
 
-let wordcount_file = ref "/Users/mike/Dropbox/Oxford/thesis/wordcount_test"
+let wordcount_file = ref "/Users/mike/Dropbox/Oxford/thesis/wordcount"
 
 let read_wordcount () =
   let f = open_in !wordcount_file in
