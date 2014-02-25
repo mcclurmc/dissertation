@@ -30,7 +30,9 @@ let write_wordcount lines =
      output_string f l;
      output_char f '\n';
      loop ls
-  in loop lines
+  in
+  loop lines;
+  close_out f
 
 let split_line l = Str.(split (regexp " ") l)
 
