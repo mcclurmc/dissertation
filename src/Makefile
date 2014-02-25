@@ -28,6 +28,15 @@ spellcheck:
 	aspell -d en_GB -p aspell.en.pws -c proposal.tex
 	aspell -d en_GB -p aspell.en.pws -c reflection.tex
 
+wordcount:
+	@texcount -merge main.tex 2> /dev/null
+
+recordcount:
+	@../bin/recordcount.sh main.tex >> ../wordcount
+
+plotcount:
+	@echo Unimplemented
+
 .PHONY:
 clean:
 	latexmk -c
