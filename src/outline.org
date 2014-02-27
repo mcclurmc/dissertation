@@ -1,0 +1,30 @@
+_Thesis outline_
+
+* Intro
+  - Quickly describe the idea
+  - Motivation
+    - Brief tour of software testing
+      - Why is testing important?
+	- At the most basic, it helps ensure that software is
+          functioning according to a specification
+	- Piece from NIST about software bugs costing $$$
+	- Relative cost of fixing a bug
+	- Serves as a demonstration of software quality
+	- Can serve to catch regressions
+	- Can aid in refactoring
+      - What kind of software tests are there?
+	- Three levels of tests: unit, component, system (also often
+          referred to as unit, integration, and acceptance)
+	  - System/acceptance tests
+	  - Component/integration tests
+	  - Unit tests
+	- 
+      - What is mocking, and how is it used?
+      - Differences between OO and FP styles of testing (or perhaps,
+        testability implications of language features)
+	- Pure versus impure functions
+	- Pure functions can often take advantage of "quickcheck" style testing
+	- Types eliminate whole classes of errors
+* Background
+  - Mocking as a testing technique
+  - OCaml's module system
