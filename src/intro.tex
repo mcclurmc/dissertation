@@ -1,4 +1,5 @@
 \chapter{Introduction}
+\label{introduction}
 
 This disertation will explore the use of a unit testing technique
 called ``dependency mocking'' in the strongly, statically typed
@@ -10,13 +11,21 @@ was first applied for use in Java, which is an object oriented
 langauge with static types and run-time instrumentation
 facilities.
 
-This disertation will describe the current state-of-the-art in unit
-testing, specifically as it applies to functional programming
-languages similar to OCaml (XXX just cover the thesis' organisation
-here).
+%% This disertation will describe the current state-of-the-art in unit
+%% testing, specifically as it applies to functional programming
+%% languages similar to OCaml (XXX just cover the thesis' organisation
+%% here).
 
-The dissertation is organised as follows. (XXX And fill this out
-later)
+The dissertation is organised as follows. Chapter \ref{introduction},
+Introduction, describes the problem and gives motivation. Chapter
+\ref{background}, Background, describes software testing in more
+detail, including different levels of testing, common test design
+patterns, and tools commonly used for testing. Chapter
+\ref{application}, Application, describes the implementation of a
+tool, MoCaml, to assist OCaml developers in automatically generating
+mock dependencies, and compares tests written using this tool versus
+other similar tools. Chapter \ref{reflection}, Reflection, describes
+the experience of writing tests using MoCaml to write tests.
 
 \section{Motivation of this dissertation}
 
@@ -25,10 +34,26 @@ later)
 %% Why is testing important? Include the statistic about how expensive
 %% bugs are to fix after code has been shipped.
 
-Testing is an important part of software development. XXX study showed
-that the average cost of fixing a bug in production is an order of
-magnitude greater than the cost of fixing it pre-production (cite
-needed!).
+Automated testing is an important part of software development. At its
+most basic, software testing is a means of demonstrating the quality
+of software -- and the costs of poor quality in software can be
+huge. In 2002, the US National Institute of Standards and Technology
+estimated that poor software testing practices may cost the US between
+\$22.2 and \$59.5 billion USD per year (not including the costs of
+``mission critical'' software whose failure could lead to catastrophic
+failure or loss of life). Furthermore, studies have shown that the
+cost of fixing a software defect in production may be up to two orders
+of magnitude greater than if the bug had been fixed in the development
+phase. \cite{mcconnell:code} \cite{boehm:understanding} While this
+``orders of magnitude'' statement has been part of the software
+engineering lore since Boehm first made the observation in 1988, more
+recent analysis \cite{boehm:software} \cite{bossavit:leprechauns}
+indicates that the ratio of cost between fixing a bug in development
+versus production may be closer to 1:5 rather than
+1:100. Nevertheless, this is still a strong motivation to resolve
+software defects as early as possible in the development cycle.
+
+
 
 % testing versus static type checking
 
@@ -40,18 +65,22 @@ needed!).
 
 % types of tests. probably don't need this?
 
-Software tests are often categorised as either system, component, or
-unit tests. These categories represent a spectrum of
-granularity. Systems tests represent the broadest granularity, and are
-meant to test the entire system as a whole. On the other end of the
-spectrum are unit tests, which test functionality at the finest level
-of granularity: typically a method or function. Component tests sit
-somewhere in between the two ends of the spectrum, and might test
-interactions between modules or classes of an application, or perhaps
-the interaction between a web server and a database. A system test may
-require a test environment that is an exact replica of the production
-system, whereas a unit test may be run on the developer's workstation
-each time the software is rebuilt.
+Software tests are typically grouped into three different levels:
+system tests, component tests, and unit tests \cite{XXX}. These
+categories represent a spectrum of granularity. Systems tests
+represent the broadest granularity, and are meant to test the entire
+system as a whole. On the other end of the spectrum are unit tests,
+which test functionality at the finest level of granularity: typically
+a method or function. Component tests sit somewhere in between the two
+ends of the spectrum, and might test interactions between modules or
+classes of an application, or perhaps the interaction between distinct
+services of a larger application. Some textbooks, particularly those
+describing Agile software development pracices, prefer the terms
+acceptance and integration tests over system and component tests
+\cite{freeman:growing} \cite{humble:continuous}. While these terms are
+perhaps more descriptive of the objective of the different types of
+tests, in this dissertation we will prefer to use the terms system and
+component test, which better demonstrate {\em what} is being tested.
 
 Recent trends in Agile development, such as continuous integration
 \cite{humble:continuous} and test driven development \cite{beck:tdd},
