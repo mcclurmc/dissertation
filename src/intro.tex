@@ -1,14 +1,14 @@
 \chapter{Introduction}
 \label{introduction}
 
-This disertation will explore the use of a unit testing technique
+This dissertation will explore the use of a unit testing technique
 called ``dependency mocking'' in the strongly, statically typed
-functionl programming language OCaml. Mocking (or object mocking, as
+functional programming language OCaml. Mocking (or object mocking, as
 it is more commonly known) is method of replacing hard-to-test
 dependencies in object-oriented code with automatically generated
 objects in order to make it easier to write unit tests. The technique
 was first applied for use in Java, which is an object oriented
-langauge with static types and run-time instrumentation
+language with static types and run-time instrumentation
 facilities.
 
 %% This disertation will describe the current state-of-the-art in unit
@@ -33,6 +33,8 @@ the experience of writing tests using MoCaml to write tests.
 
 %% Why is testing important? Include the statistic about how expensive
 %% bugs are to fix after code has been shipped.
+
+\subsection{Why write unit tests}
 
 Automated testing is an important part of software development. At its
 most basic, software testing is a means of demonstrating the quality
@@ -75,7 +77,7 @@ a method or function. Component tests sit somewhere in between the two
 ends of the spectrum, and might test interactions between modules or
 classes of an application, or perhaps the interaction between distinct
 services of a larger application. Some textbooks, particularly those
-describing Agile software development pracices, prefer the terms
+describing Agile software development practices, prefer the terms
 acceptance and integration tests over system and component tests
 \cite{freeman:growing} \cite{humble:continuous}. While these terms are
 perhaps more descriptive of the objective of the different types of
@@ -87,19 +89,110 @@ Recent trends in Agile development, such as continuous integration
 have placed a greater emphasis on unit testing. Consequentially, many
 tools and libraries have been developed to assist programmers in
 writing these tests. Many of these libraries, such as JUnit
-\cite{www:junit} for Java, NUnit \cite{www:nunit} for .NET, and OUnit
-\cite{www:ounit} for OCaml, follow the xUnit patterns of test
+\cite{www:junit} for Java, NUnit \cite{www:nunit} for .NET, Test:Unit
+\cite{www:ruby:unit} and RSpec \cite{www:ruby:rspec} for Ruby, and
+OUnit \cite{www:ounit} for OCaml, follow the xUnit patterns of test
 development described by Meszaros \cite{meszaros:xunit}. This family
 of libraries typically provides a set of convenient assertion
 functions to help the user write test cases, annotations to help
 organise these test cases into larger test suites, and test harnesses
 to handle test running and status reporting.
 
+\subsection{What are Mocks}
+
+%% Describe xUnit pattern component names
+
+%% XXX This might be a better fit for the Background section. Perhaps
+%% we want a smaller introduction to Mocks in the Intro?
+
+To understand mock objects, we should first familiarise ourselves with
+the xUnit Pattern Language \cite{meszaros:xunit}. A pattern language
+is a high-level, often visual, framework for describing patterns that
+occur in software engineering. The xUnit Pattern Language has a
+vocabulary that aids in describing the patterns that commonly occur
+in unit testing. Primarily, it contains a vocabulary that covers most
+aspects of software engineering and software testing. The following is
+glossary of terms we will use in the following chapters.
+
+\begin{description}
+
+\item[System Under Test (SUT)] The part of the software that is being
+  tested. Confusingly, this doesn't necessarily refer to the system as
+  a whole, but rather the component of the system that is actually
+  being tested. For instance, if we are testing a particular HTTP
+  handler of a web application, the SUT is the HTTP handler itself,
+  not the web application as a whole.
+
+\item[Depended Upon Component (DOC)] A component of the software which
+  is a required dependency of the SUT. For instance, the HTTP handler
+  we are testing may make a database query through an object
+  relational mapper (ORM). In this case, the ORM is a DOC. A SUT may
+  have more than one DOC.
+
+\item[Dependency Injection (DI)] The act of configuring a SUT's
+  dependencies, either at compile-time or run-time. A dependency which
+  is configured at compile-time is often described as a ``hard-coded''
+  dependency. Various dependency injection frameworks exist which
+  provide facilities for configuring dependencies at run-time. For
+  instance, a DI framework might instruct the ORM to map to a test
+  database when a program is run in test mode, but would map to the
+  real database when the program is run in production. This prevents
+  the components of the software which interact with the database
+  through the ORM from having to handle special-cases for testing
+  purposes.\footnote{Dependency injection is not necessarily a part
+    of the xUnit Pattern Language, but it is defined here because
+    dependency injection plays an important role in the construction
+    of tests that use the mocking technique.}
+
+% p. 209
+\item[Hard-to-Test Code] For many reasons, some software components
+  will be hard to test. A component may depend on external data that
+  isn't available at test time. A component may require certain
+  specialised hardware to run which isn't available at test time. A
+  component may be difficult to access programmatically (such as a GUI
+  or web interface). Or the software may be written in a way that will
+  make tests brittle and prone to breaking (such is the case with
+  tightly coupled components). Refactoring may help make tightly
+  coupled code easier to test, but some components may just be
+  intrinsically hard to test.
+
+% p. 59
+\item[Test fixture] Tests often require certain infrastructure to be
+  set up prior to a test run. A test database may need to be
+  instantiated, or the program may need to be guided into a certain
+  state before a particular test is run. The component which handles
+  setting up this infrastructure is known as the test fixture
+  (sometimes referred to as a test harness). Test fixtures often use
+  a form of dependency injection to set up tests.
+
+%% is this definition necessary?
+%% \item[Test suite] A collection of tests which are meant to be run
+%%   together.
+
+%% Are we spilling the beans to early here?
+%%\item[Test double]
+
+\end{description}
+
+xUnit Test Patterns also defines the four phases of the testing life cycle:
+
+\begin{enumerate}
+
+\item \textbf{Setup}
+
+\item \textbf{Exercise}
+
+\item \textbf{Verify}
+
+\item \textbf{Teardown}
+
+\end{enumerate}
+
 A common problem with writing unit tests is that, for various reasons,
 some code is just hard to test. This is often the case when the
 depended-on component (DOC) of the system under test (SUT) performs
 some side-effecting operation that is not valid in the test scenario,
-or is otherwise impossible to run from within the test
-harness.
+or is otherwise impossible to run from within the test harness.
+
 
 \section{Objectives and expected contribution}

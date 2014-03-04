@@ -25,6 +25,11 @@ _Thesis outline_
 	- Pure versus impure functions
 	- Pure functions can often take advantage of "quickcheck" style testing
 	- Types eliminate whole classes of errors
+  - Objectives and expected contribution
+    - Objectives
+      - Create MoCaml tool for mock generation in OCaml
+      - Describe a useful softare test pattern which is commonly used
+        in OO programming, and make it useful in an FP context.
 * Background
   - Mocking as a testing technique
   - OCaml's module system
