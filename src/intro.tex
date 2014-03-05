@@ -123,7 +123,7 @@ glossary of terms we will use in the following chapters.
   handler of a web application, the SUT is the HTTP handler itself,
   not the web application as a whole.
 
-\item[Depended Upon Component (DOC)] A component of the software which
+\item[Depended-On Component (DOC)] A component of the software which
   is a required dependency of the SUT. For instance, the HTTP handler
   we are testing may make a database query through an object
   relational mapper (ORM). In this case, the ORM is a DOC. A SUT may
@@ -170,7 +170,16 @@ glossary of terms we will use in the following chapters.
 %%   together.
 
 %% Are we spilling the beans to early here?
-%%\item[Test double]
+\item[Test double] It may be impossible to test the SUT because it
+  contains a DOC which is hard-to-test. In this case, the test double
+  pattern can be used. A test double is a replacement for a
+  hart-to-test DOC which makes it possible to test the SUT. xUnit
+  defines the following test doubles: Test Stub, Test Spy, Mock
+  Object, and Fake Object. In addition to these types of double, test
+  doubles may either be configurable at run time, or have their
+  configuration hard-coded. Test doubles will be further discussed in
+  section \ref{testdoubles}, where we will discuss the mock pattern in
+  much greater depth.
 
 \end{description}
 
