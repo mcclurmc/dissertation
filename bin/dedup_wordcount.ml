@@ -58,7 +58,7 @@ let rec dedup_lines acc cur = function
        | Some c ->
           if dates_equal l c
           then dedup_lines acc (Some l) ls
-          else dedup_lines (c::acc) None ls
+          else dedup_lines (c::acc) (Some l) ls
      end
 
 let main : unit =
