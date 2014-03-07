@@ -35,7 +35,7 @@ recordcount:
 	@../bin/recordcount.sh main.tex >> ../wordcount
 
 plotcount:
-	@echo Unimplemented
+	@gnuplot ../bin/wordcount.gnu
 
 .PHONY:
 clean:
