@@ -1,21 +1,42 @@
 \chapter{Background}
 \label{background}
 
-\section{Unit testing, and problem with hard-to-test dependencies}
+In this section we will provide a brief tour of the OCaml programming
+language, focusing espectially on its powerful module system. The
+chapter follows with an in-depth discussion of xUnit's Test Double
+patterns and their implementation in OCaml and Java. The chapter
+concludes with a summary of the current state-of-the-art testing tools
+for functional languages such as OCaml and Haskell.
 
-\subsection{Test doubles}
+\section{A brief tour of OCaml and its module system}
+\label{ocaml}
+
+
+\section{Test Double patterns in detail}
 \label{testdoubles}
 
 % \section{The test double pattern, especially mocks}
+\subsection{Dummy Object pattern}
+\label{testdoubles:dummy}
 
-\subsubsection{Talk about mocks now}
+\subsection{Fake Object pattern}
+\label{testdoubles:fake}
+
+\subsection{Test Stub pattern}
+\label{testdoubles:stub}
+
+\subsection{Test Spy Object pattern}
+\label{testdoubles:spy}
+
+\subsection{Mock Object pattern}
 \label{testdoubles:mocks}
 
-\section{Functional languages, specifically testing}
+\section{Tools for software testing in functional langauges}
+\label{testtools}
 
-\section{State of current tools for testing}
-
-Especially in functional languages, and again, especially in OCaml.
-
-\section{Existing tools, capabilities in OCaml that I can base my library on}
-
+\begin{enumerate}
+\item Haskell quickcheck
+\item xUnit implementations: HUnit, OUnit
+\item Kaputt for OCaml
+\item Haskell benchmarking lib?
+\end{enumerate}
