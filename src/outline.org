@@ -32,4 +32,28 @@ _Thesis outline_
         in OO programming, and make it useful in an FP context.
 * Background
   - Mocking as a testing technique
-  - OCaml's module system
+    - Definition and examples of other test doubles
+    - Extended example of mocks using java and ruby
+    - Describe problems with test double patterns (overuse can create
+      fragile tests; missuse can lead to tests that don't actually
+      test the SUT)
+      - See section in xUnit on State and Behaviour verification for
+        thoughts on whether mocking is "worth it"
+  - The OCaml language
+    - Point of this section is to describe OCaml's module system, the
+      camlp4 preprocessing tool (or perhaps extension points), and
+  - Unit testing in functional programming languages
+    - "State of the art" of testing in FP languages, specifically
+      strongly typed languages, and even more specifically, OCaml.
+    - Quickcheck (Haskell)
+    - OUnit, HUnit (OCaml, Haskell)
+    - Kaputt (OCaml) (has mock helper functions, doesn't generate mocks)
+* Application
+  - An API for mocks in OCaml
+    - Describe a process for manually mocking ocaml modules, and use
+      code examples.
+    - Describe how I wrote code to automatically generate mock
+      implementations of modules' interfaces
+    - Demonstrate the use of this library.
+* Reflection
+  - Pause to reflect.

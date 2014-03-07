@@ -2,8 +2,19 @@
 
 \usepackage{times}
 \usepackage{outline}
-\usepackage{ulem}
+\usepackage[normalem]{ulem}
 \usepackage{mdwlist}
+\usepackage{listings}
+\usepackage{hyperref}
+
+%% Code formatting
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines,
+  breakatwhitespace,
+}
+\newcommand{\code}{\lstinline}
 
 %% XXX title needs work
 \title{MoCaml: automatic dependency generation for OCaml}
@@ -53,6 +64,10 @@
 \newpage
 
 \tableofcontents
+
+\newpage
+
+\listoffigures
 
 %% Include chapters
 \include{intro}
