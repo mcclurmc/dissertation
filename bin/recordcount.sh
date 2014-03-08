@@ -5,6 +5,8 @@
 
 DATE=`date "+%Y-%m-%d"`
 
-COUNT=`texcount -sum -merge $1 2> /dev/null| grep "Sum count" | awk '{ print $3 }'`
+WORDS=`texcount -sum -merge $1 2> /dev/null| grep "Sum count" | awk '{ print $3 }'`
 
-echo "${DATE} ${COUNT}"
+PAGES=`pdfinfo -meta $2 | grep "Pages" | awk '{ print $2 }'`
+
+echo "${DATE} ${WORDS} ${PAGES}"

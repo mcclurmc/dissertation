@@ -32,12 +32,12 @@ wordcount:
 	@texcount -merge main.tex 2> /dev/null
 
 recordcount:
-	@../bin/recordcount.sh main.tex >> ../wordcount
+	@../bin/recordcount.sh main.tex main.pdf >> ../wordpage
 	@../bin/dedup_wordcount.ml
-	@cat ../wordcount
+	@cat ../wordpage
 
 plotcount: recordcount
-	@gnuplot ../bin/wordcount.gnu
+	@gnuplot ../bin/wordpage.gnu
 
 .PHONY:
 clean:
