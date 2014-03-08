@@ -33,7 +33,7 @@ wordcount:
 
 recordcount:
 	@../bin/recordcount.sh main.tex main.pdf >> ../wordpage
-	@../bin/dedup_wordcount.ml
+	@../bin/dedup_wordcount.ml ../wordpage
 	@cat ../wordpage
 
 plotcount: recordcount
