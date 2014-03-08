@@ -11,34 +11,164 @@ for functional languages such as OCaml and Haskell.
 \section{A brief tour of OCaml and its module system}
 \label{ocaml}
 
-% \cite{rwo} \cite{ocaml:spec}
+%% XXX try this:
+%% https://tex.stackexchange.com/questions/106844/adding-words-to-lstlisting-for-python-langaue
+%% in order to get multiple levels of keywords
+\lstset{
+  language=ML,
+  morekeywords={function},
+}
 
-Want to talk quickly about code (functions, types, type inference),
-modules, functors, first class modules. Mention that OCaml has a class
-language, but that idiomatic OCaml typically uses functions and
-modules unless a particular algorithm or solution to a problem
-warrants an object-oriented implemtation.
+%% Want to talk quickly about code (functions, types, type inference),
+%% modules, functors, first class modules. Mention that OCaml has a class
+%% language, but that idiomatic OCaml typically uses functions and
+%% modules unless a particular algorithm or solution to a problem
+%% warrants an object-oriented implemtation.
+
+OCaml is a strongly, statically typed functional programming language
+based on the ML family of languages. It may be interpreted in a
+read-eval-print loop called the OCaml ``toplevel,'' or it may be
+compiled to an OCaml specific bytecode languate or to a native
+executable. \cite{ocaml:spec} It has a very good generational garbage
+collector tuned for sequential programs. \cite{ocaml:gc_tutorial}
+
+What follows is a \textit{very} brief tour of the OCaml programming
+language. This should hopefully be enough to allow the reader to
+follow along with the coding examples later in this chapter and the
+next. For more assistance with OCaml, the reader is directed to the
+OCaml Langauge Specification \cite{ocaml:spec}, and Real World OCaml
+\cite{rwo}\footnote{Real World OCaml is available for free online:
+  \url{https://realworldocaml.org/v1/en/html/index.html}}
 
 \subsubsection{OCaml basics: values, functions, and types}
 
-OCaml is a strongly, statically typed functional programming
-language. It may be interpreted in a read-eval-print loop called the
-OCaml ``toplevel,'' or it may be compiled to an OCaml specific
-bytecode languate or to a native executable.\cite{ocaml:spec} It has a
-very good generational garbage collector tuned for sequential
-programs.\cite{ocaml:gc_tutorial}
+In OCaml, values are assigned to variables using the \code{let}
+keyword.
+
+\begin{lstlisting}
+  let num = 42
+  let str = "hello world"
+  let list = [1;2;3;4]
+  let tuple = (1,2)
+\end{lstlisting}
+
+Variables in OCaml are immutable, unless they are specially defined as
+references, or mutable fields of a record type.
+
+\begin{lstlisting}
+  let num = ref 42
+  Printf.printf "num was %d\n" !num
+  num := 24
+  Printf.printf "num is now %d\n" !num
+\end{lstlisting}
+
+Functions are created with the keywords \code{fun} or \code{function},
+and assigned names using \code{let}, just like other values. Functions
+defined using the \code{function} keyword can only take one arguement,
+but that argument can be pattern-matched.
+
+\begin{lstlisting}
+  let f = fun a b -> a + b
+  let g = function
+          | [] -> true
+          | _  -> false
+\end{lstlisting}
+
+Functions can also be created using a shorthand \code{let} syntax. The
+function \code{f} below is equivalent to the function \code{f} above.
+
+\begin{lstlisting}
+  let f a b = a + b
+\end{lstlisting}
+
+OCaml is a strongly, statically typed language. The compiler will
+infer the type of values, and will return an error if a type
+constraint is violated. For instance, the following function \code{f}
+has type \code{int -> int -> int}, meaning that it takes two values of
+type \code{int} and returns a value of type \code{int}. If a
+\code{string} or \code{float} are passed to this function, a
+compilation error is thrown.
+
+\begin{lstlisting}
+  let f a b = a + b     (* has type int -> int -> int *)
+  f 40 2                (* this type-checks *)
+  f "4" "2"             (* this fails to type-check *)
+  f 41.8 0.2            (* this also fails to type-check *)
+\end{lstlisting}
+
+Because functions are first-class values just like \code{int}s and
+\code{string}s, we can pass them to other functions. For instance, the
+function \code{List.map} takes a function \code{f} and a list
+\code{ls}, and returns a new list containing the result of applying
+\code{f} to each element of \code{ls}.
+
+\begin{lstlisting}
+  let f x = x + 1
+  let ls = [1;2;3;4]
+  List.map f ls         (* returns the value [2;3;4;5] *)
+\end{lstlisting}
+
+OCaml allows the user to define complex types.
+
+\begin{lstlisting}
+  (* Variant types *)
+  type colors =
+    | Red of int
+    | Green of int
+    | Blue of int
+
+  (* Polymorphic variants *)
+  type json = ...
+
+  (* Record types *)
+  type book = {
+    author : string;
+    title  : string;
+    mutable inventory : int;
+  }
+\end{lstlisting}
+
+XXX pattern matching
+
+\begin{lstlisting}
+  match [1;2;3] with
+  | [] -> "empty"
+  | 1::ls -> ...
+\end{lstlisting}
 
 \subsubsection{The OCaml module system}
 
+A distingquising feature of OCaml is its powerful module system. A
+module in OCaml is the basic compilation unit. Each compiled file is
+assigned its own module. For instance, the definitions inside a file
+called \code{foo.ml} would be placed into a module \code{Foo}.
+
+XXX modules in files
+
+XXX module type signatures
+
+XXX functors
+
+XXX first class modules
+
 \subsubsection{The rest of OCaml}
 
-Briefly mention OCaml's obect system and class language, and point the
-reader to books and web resources.
+Briefly mention OCaml's object system and class language, and point
+the reader to books and web resources.
 
 \section{Test Double patterns in detail}
 \label{testdoubles}
 
-% \section{The test double pattern, especially mocks}
+\begin{figure}
+  \centering
+  \includegraphics[scale=1.0]{img/XXX.png}
+  \caption[Taxonomy of Test Double patterns]{Taxonomy of Test Double patterns\footnotemark}
+  \label{fig:taxonomy}
+\end{figure}
+\footnotetext{Adapted from Meszaros \cite{meszaros:xunit}}
+
+As figure \ref{fig:taxonomy} shows\dots
+
 \subsection{Dummy Object pattern}
 \label{testdoubles:dummy}
 
@@ -58,8 +188,8 @@ reader to books and web resources.
 \label{testtools}
 
 \begin{enumerate}
-\item Haskell quickcheck
-\item xUnit implementations: HUnit, OUnit
-\item Kaputt for OCaml
-\item Haskell benchmarking lib?
+\item Haskell quickcheck \cite{claessen:quickcheck}
+\item xUnit implementations: HUnit \cite{www:hunit}, OUnit \cite{www:ounit}
+\item Kaputt for OCaml \cite{www:kaputt}
+\item Haskell benchmarking lib? \cite{www:criterion}
 \end{enumerate}

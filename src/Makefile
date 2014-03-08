@@ -33,8 +33,10 @@ wordcount:
 
 recordcount:
 	@../bin/recordcount.sh main.tex >> ../wordcount
+	@../bin/dedup_wordcount.ml
+	@cat ../wordcount
 
-plotcount:
+plotcount: recordcount
 	@gnuplot ../bin/wordcount.gnu
 
 .PHONY:
