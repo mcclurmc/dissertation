@@ -46,20 +46,20 @@ In OCaml, values are assigned to variables using the \code{let}
 keyword.
 
 \begin{lstlisting}
-  let num = 42
-  let str = "hello world"
-  let list = [1;2;3;4]
-  let tuple = (1,2)
+let num = 42
+let str = "hello world"
+let list = [1;2;3;4]
+let tuple = (1,2)
 \end{lstlisting}
 
 Variables in OCaml are immutable, unless they are specially defined as
 references, or mutable fields of a record type.
 
 \begin{lstlisting}
-  let num = ref 42
-  Printf.printf "num was %d\n" !num
-  num := 24
-  Printf.printf "num is now %d\n" !num
+let num = ref 42
+Printf.printf "num was %d\n" !num
+num := 24
+Printf.printf "num is now %d\n" !num
 \end{lstlisting}
 
 Functions are created with the keywords \code{fun} or \code{function},
@@ -68,17 +68,17 @@ defined using the \code{function} keyword can only take one arguement,
 but that argument can be pattern-matched.
 
 \begin{lstlisting}
-  let f = fun a b -> a + b
-  let g = function
-          | [] -> true
-          | _  -> false
+let f = fun a b -> a + b
+let g = function
+        | [] -> true
+        | _  -> false
 \end{lstlisting}
 
 Functions can also be created using a shorthand \code{let} syntax. The
 function \code{f} below is equivalent to the function \code{f} above.
 
 \begin{lstlisting}
-  let f a b = a + b
+let f a b = a + b
 \end{lstlisting}
 
 OCaml is a strongly, statically typed language. The compiler will
@@ -90,10 +90,10 @@ type \code{int} and returns a value of type \code{int}. If a
 compilation error is thrown.
 
 \begin{lstlisting}
-  let f a b = a + b     (* has type int -> int -> int *)
-  f 40 2                (* this type-checks *)
-  f "4" "2"             (* this fails to type-check *)
-  f 41.8 0.2            (* this also fails to type-check *)
+let f a b = a + b     (* has type int -> int -> int *)
+f 40 2                (* this type-checks *)
+f "4" "2"             (* this fails to type-check *)
+f 41.8 0.2            (* this also fails to type-check *)
 \end{lstlisting}
 
 Because functions are first-class values just like \code{int}s and
@@ -103,47 +103,67 @@ function \code{List.map} takes a function \code{f} and a list
 \code{f} to each element of \code{ls}.
 
 \begin{lstlisting}
-  let f x = x + 1
-  let ls = [1;2;3;4]
-  List.map f ls         (* returns the value [2;3;4;5] *)
+let f x = x + 1
+let ls = [1;2;3;4]
+List.map f ls         (* returns the value [2;3;4;5] *)
 \end{lstlisting}
 
 OCaml allows the user to define complex types.
 
 \begin{lstlisting}
-  (* Variant types *)
-  type colors =
-    | Red of int
-    | Green of int
-    | Blue of int
+(* Variant types *)
+type colors =
+  | Red of int
+  | Green of int
+  | Blue of int
 
-  (* Polymorphic variants *)
-  type json = ...
+(* Polymorphic variants *)
+type json = ...
 
-  (* Record types *)
-  type book = {
-    author : string;
-    title  : string;
-    mutable inventory : int;
-  }
+(* Record types *)
+type book = {
+  author : string;
+  title  : string;
+  mutable inventory : int;
+}
 \end{lstlisting}
+
+XXX type variables
 
 XXX pattern matching
 
 \begin{lstlisting}
-  match [1;2;3] with
-  | [] -> "empty"
-  | 1::ls -> ...
+match [1;2;3] with
+| [] -> "empty"
+| 1::ls -> ...
 \end{lstlisting}
 
 \subsubsection{The OCaml module system}
 
-A distingquising feature of OCaml is its powerful module system. A
+A distinguishing feature of OCaml is its powerful module system. A
 module in OCaml is the basic compilation unit. Each compiled file is
 assigned its own module. For instance, the definitions inside a file
 called \code{foo.ml} would be placed into a module \code{Foo}.
 
-XXX modules in files
+\lstinputlisting[caption=foo.ml]{examples/foo.ml}
+
+From outside of this module, function \code{f} would be referenced as
+\code{Foo.f}. Module \code{Foo} has the following type:
+
+\begin{lstlisting}
+  type t = int
+  val f : 'a -> 'a
+\end{lstlisting}
+
+The types of modules can be restricted useing \code{mli} files. When
+an \code{mli} file exists with the same basename as an \code{ml} file,
+the module type of the module created for that \code{ml} file is
+restricted to that of the signature specified in the \code{mli}
+file. For instance, if we have:
+
+\lstinputlisting[caption=foo.mli]{examples/foo.mli}
+
+
 
 XXX module type signatures
 
