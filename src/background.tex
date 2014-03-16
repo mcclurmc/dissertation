@@ -16,7 +16,7 @@ for functional languages such as OCaml and Haskell.
 %% in order to get multiple levels of keywords
 \lstset{
   language=ML,
-  morekeywords={function,module},
+  morekeywords={function,module,match,try},
 }
 
 %% Want to talk quickly about code (functions, types, type inference),
@@ -38,14 +38,15 @@ follow along with the coding examples later in this chapter and the
 next. For more assistance with OCaml, the reader is directed to the
 OCaml Langauge Specification \cite{ocaml:spec}, and Real World OCaml
 \cite{rwo}\footnote{Real World OCaml is available for free online:
-  \url{https://realworldocaml.org/v1/en/html/index.html}}
+  \url{https://realworldocaml.org}}
 
-\subsubsection{OCaml basics: values, functions, and types}
+\subsection{OCaml basics: values, functions, and types}
 
 In OCaml, values are assigned to variables using the \code{let}
 keyword.
 
 \begin{lstlisting}
+(* This is a comment *)
 let num = 42
 let str = "hello world"
 let list = [1;2;3;4]
@@ -111,14 +112,14 @@ List.map f ls         (* returns the value [2;3;4;5] *)
 OCaml allows the user to define complex types.
 
 \begin{lstlisting}
+(* Tuples *)
+type position = int * int
+
 (* Variant types *)
 type colors =
   | Red of int
   | Green of int
   | Blue of int
-
-(* Polymorphic variants *)
-type json = ...
 
 (* Record types *)
 type book = {
@@ -128,17 +129,76 @@ type book = {
 }
 \end{lstlisting}
 
-XXX type variables
-
-XXX pattern matching
+%% polymorphic variants
 
 \begin{lstlisting}
-match [1;2;3] with
-| [] -> "empty"
-| 1::ls -> ...
+(* Polymorphic variants *)
+type json = XXX
 \end{lstlisting}
 
-\subsubsection{The OCaml module system}
+%% type variables
+
+Polymorphism in OCaml data types is expressed with type variables. In
+the following example, \code{'a} is a type variable which can
+represent any type, making \code{tree} a generic data type.
+
+\begin{lstlisting}
+type 'a tree =
+  | Leaf of 'a
+  | Node of 'a tree * 'a tree
+\end{lstlisting}
+
+%% pattern matching
+
+One of the most powerful features of languages like OCaml is pattern
+matching. OCaml allows one to match over the structure of defined data
+types. Pattern matching can be accomplished with the
+\code{match value with | patt -> expr}
+expression, or in functions created with the \code{function} keyword.
+
+\begin{lstlisting}
+let rec num_leaves = function
+  | Leaf _      -> 1
+  | Node (l, r) ->
+    (num_leaves l) + (num_leaves r)
+\end{lstlisting}
+
+%% exceptions
+
+\begin{lstlisting}
+exception Not_found
+let rec find x = function
+  | [] -> raise Not_found
+  | (k,v)::ls -> if x = k
+                 then v
+                 else find x ls
+\end{lstlisting}
+
+Exceptions can also carry data:
+
+\begin{lstlisting}
+exception Error of [`Invalid_request of string | `Permissions]
+raise (Error (`Invalid_request "foo"))
+raise (Error `Permissions)
+\end{lstlisting}
+
+``try/catch'' blocks in OCaml are similar to those in other languages,
+except OCaml pattern matches on the ``catch'' block using the
+\code{with} keyword.
+
+\begin{lstlisting}
+try
+  raise (Error (`Invalid_request "foo"))
+with
+  | Error `Permissions ->
+    print_endline "Bad permissions"
+  | Error (`Invalid_request req) ->
+    Printf.printf "Invalid request: %s\n" req
+\end{lstlisting}
+
+\subsection{The OCaml module system}
+
+\subsubsection{Modules, signatures, and compilation units}
 
 A distinguishing feature of OCaml is its powerful module system. A
 module in OCaml is the basic compilation unit. Each compiled file is
@@ -147,7 +207,10 @@ called \code{foo.ml} would be placed into a module \code{Foo}.
 
 %% XXX not sure if we want these to come from separate files, or if we
 %% want to put a border around them, or...
-\lstinputlisting[caption=foo.ml,frame=single]{examples/foo.ml}
+\lstinputlisting[
+  caption=foo.ml,
+  %frame=single,
+]{code/foo.ml}
 
 From outside of this module, function \code{f} would be referenced as
 \code{Foo.f}. Module \code{Foo} has the following type:
@@ -163,7 +226,7 @@ the module type of the module created for that \code{ml} file is
 restricted to that of the signature specified in the \code{mli}
 file. For instance, if \code{foo.mli} is:
 
-\lstinputlisting[caption=foo.mli]{examples/foo.mli}
+\lstinputlisting[caption=foo.mli]{code/foo.mli}
 
 then the resulting type of module \code{Foo} would be:
 
@@ -177,14 +240,13 @@ its implementation outside of module \code{Foo}, and function \code{f}
 is now restricted to have type \code{t -> t}, instead of the more
 general \code{'a -> 'a}.
 
-XXX smaller modules
-
 OCaml modules can also be defined independently of compilation
 units.
 
 \begin{lstlisting}
 module Bar =
 struct
+  type t = int
   let g a = a + 1
   let h ls = List.map g ls
 end
@@ -196,17 +258,109 @@ resulting type of a module in the same way as an \code{mli} file.
 \begin{lstlisting}
 module type BAR =
 sig
+  type t
   val h : int list -> int list
 end
 \end{lstlisting}
 
-XXX Show how to restrict \code{module Bar2 = (Bar : BAR)}
+We can limit the type of \code{module Bar} to the signature
+\code{BAR} by restricting it:
 
-XXX functors
+\begin{lstlisting}
+module Bar2 = (Bar : BAR)
+\end{lstlisting}
 
-XXX first class modules
+We can also restrict the orignal definition of \code{module Bar}:
 
-\subsubsection{The rest of OCaml}
+\begin{lstlisting}
+module Bar1 : BAR =
+struct
+  type t = int
+  let g a = a + 1
+  let h ls = List.map g ls
+end
+\end{lstlisting}
+
+Modules \code{Bar1} and \code{Bar2} are now restricted by the
+signature \code{BAR}. The value \code{g} is now hidden, and
+\code{type t} is now abstract.
+
+\subsubsection{Functors}
+
+(XXX functors) In most languages, a module system is primarily meant
+to provide a namespacing system or a way to refer to compilation units
+(cf. Haskell's module system \cite{www:haskell:modules}, or Python's
+module system \cite{www:python:modules}). OCaml, however, has a much
+more powerful module system, including the ability to define
+\textit{functors}.
+
+A functor is a relation from modules to modules. A functor can take a
+module as an arguement, and use it to specialise another module. For
+instance, here is an example adapted from the OCaml language
+``Introduction to OCaml'' \cite{ocaml:spec} that creates a \code{Set}
+functor.
+
+\begin{lstlisting}
+module type ORDERED_TYPE =
+sig
+  type t
+  val compare: t -> t -> int
+end
+
+module Set =
+  functor (Elt: ORDERED_TYPE) ->
+    struct
+      type element = Elt.t
+      type set = element list
+      let empty = []
+      let add x s = ...
+    end
+\end{lstlisting}
+
+\code{Set} is a functor that takes some module with same type
+signature as \code{ORDERED_TYPE}, and returns a module which is
+specialised with that element type. For instance, we may create a new
+\code{StringSet} module using the \code{Set} functor and the
+\code{String} module from the OCaml standard library.
+
+\begin{lstlisting}
+module StringSet = Set(String)
+
+let set = StringSet.add "foo" StringSet.empty in
+StringSet.mem "foo" set  (* => true *)
+\end{lstlisting}
+
+For brevity, OCaml supports and alternative syntax for functor
+definition which is more concise. For instance, we could have defined
+the \code{Set} functor as:
+\code{module Set(Elt : ORDERED_TYPE) = struct ... end}.
+This comes in handy when one is defining a functor which takes
+multiple arguements:
+\code{module F(A : X)(B : Y) = struct ... end} .
+
+Functors are useful for creating generic data types, such as the
+\code{Set} type we defined above. We will soon see that they can also
+be useful for dependency injection.
+
+\subsubsection{First-class modules}
+
+OCaml 4.00 introduced the feature of \textit{first-class modules}. A
+first-class module is analogous to a language having first-cass
+functions: a module in OCaml can be packaged into a value, passed to
+functions, and returned from functions. First-class modules provide a
+similar capability as functors do, but are much more
+light-weight. Refactoring a module into a functor can be a significant
+amount of work, but adding a module arguement to a function is a much
+simpler change.
+
+%% XXX first class module example
+\begin{lstlisting}
+module type DATABASE = sig ... end
+
+module Db : DATABASE
+\end{lstlisting}
+
+\subsection{The rest of OCaml}
 
 Briefly mention OCaml's object system and class language, and point
 the reader to books and web resources.
@@ -224,27 +378,92 @@ the reader to books and web resources.
 
 As figure \ref{fig:taxonomy} shows\dots
 
+XXX disclaimer about the term ``Object'' when referring to test double
+patterns, and how we don't necessarily mean object in the OOP sense,
+because we can still use these patterns in a functional langauge
+without objects.
+
+%% XXX We will want to include diagrams relating all the test double
+%% patterns, and describing them individually. The xunit web page has
+%% many of these diagrams electronically, so we should use those where
+%% we can, with proper attribution.
+
+% http://xunitpatterns.com/Mocks,%20Fakes,%20Stubs%20and%20Dummies.html
+
 \subsection{Dummy Object pattern}
 \label{testdoubles:dummy}
+
+(XXX lots of work!) A Dummy Object is used in place of a DOC when the
+SUT requires a dependency for it's state, but the SUT doesn't use this
+dependency during the test. It may be expensive to create a real
+instance of the DOC, so a Dummy Object is created in its place. In
+languages like Java, the \code{null} object may be used as a Dummy
+Object. (What could we use in OCaml? Perhaps refactor so that the DOC
+is an option type? OCaml types are often less complex than Java
+objects, so we may have a simple constructor we can use instead of
+null. A pattern we often use w.r.t. record types is to construct an
+``empty'' value of that type for later extension, so we could reuse
+this value for testing purposes. Other than that, perhaps for abstract
+types hidden within modules, we may have to provide a ``dummy
+instantiator'' in that module (which is also a form of refactoring for
+testability).)
+
+%% (XXX) code example!
 
 \subsection{Fake Object pattern}
 \label{testdoubles:fake}
 
+(XXX lots of work!) A Fake Object is similar to a Dummy Object. While
+a Dummy Object may be as simple as using \code{null} in a language
+with nullable types, sometimes a more full implementation is
+required. A Fake Object is one which implements the interface of the
+DOC, but provides a simpler implementation. For instance, a database
+may be replaced by a simple hash table.
+
+%% (XXX) code example!
+
 \subsection{Test Stub pattern}
 \label{testdoubles:stub}
+
+(XXX) The Test Stub pattern is the first of the Test Double patterns
+which provides functionality specifically for the test case it is used
+for. A Test Stub is an implementation of the DOC's interface which can
+be programmed to provide set outputs when used by the SUT during the
+test. This mechanism is used by the test case to provide indirect
+inputs to the SUT via the DOC.
+
+%% (XXX) code example!
 
 \subsection{Test Spy Object pattern}
 \label{testdoubles:spy}
 
+(XXX) The Test Spy is used to to replace the DOC in the SUT and record
+the interactions that the SUT makes with the DOC. It is analogus to
+the the Test Stub, but it works in the opposite way: instead of
+providing indirect inputs from the test case to the SUT via the DOC,
+it provides indirect outputs from the SUT to the test case via the
+DOC.
+
 \subsection{Mock Object pattern}
 \label{testdoubles:mocks}
+
+(XXX) Basically combines Test Stub and Test Spy patterns in order to
+provide indirect inputs to the SUT, as well as verify the indirect
+outputs from the SUT.
 
 \section{Tools for software testing in functional langauges}
 \label{testtools}
 
 \begin{enumerate}
-\item Haskell quickcheck \cite{claessen:quickcheck}
 \item xUnit implementations: HUnit \cite{www:hunit}, OUnit \cite{www:ounit}
-\item Kaputt for OCaml \cite{www:kaputt}
+
+Unit testing frameworks for many languages follow the xUnit pattern of
+testing (\cite{junit} \cite{www:nunit} \cite{www:ruby:unit}), and
+languages like Haskell and OCaml are no different \cite{www:hunit}
+\cite{www:ounit}.
+
+\item Kaputt for OCaml \cite{www:kaputt} (different than OUnit?)
+
+\item Haskell quickcheck \cite{claessen:quickcheck}
 \item Haskell benchmarking lib? \cite{www:criterion}
 \end{enumerate}
