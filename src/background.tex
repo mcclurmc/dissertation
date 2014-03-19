@@ -42,6 +42,8 @@ OCaml Langauge Specification \cite{ocaml:spec}, and Real World OCaml
 
 \subsection{OCaml basics: values, functions, and types}
 
+\subsubsection{Values}
+
 In OCaml, values are assigned to variables using the \code{let}
 keyword.
 
@@ -63,6 +65,8 @@ num := 24
 Printf.printf "num is now %d\n" !num
 \end{lstlisting}
 
+\subsubsection{Functions}
+
 Functions are created with the keywords \code{fun} or \code{function},
 and assigned names using \code{let}, just like other values. Functions
 defined using the \code{function} keyword can only take one arguement,
@@ -82,6 +86,20 @@ function \code{f} below is equivalent to the function \code{f} above.
 let f a b = a + b
 \end{lstlisting}
 
+Because functions are first-class values just like \code{int}s and
+\code{string}s, we can pass them to other functions. For instance, the
+function \code{List.map} takes a function \code{f} and a list
+\code{ls}, and returns a new list containing the result of applying
+\code{f} to each element of \code{ls}.
+
+\begin{lstlisting}
+let f x = x + 1
+let ls = [1;2;3;4]
+List.map f ls         (* returns the value [2;3;4;5] *)
+\end{lstlisting}
+
+\subsubsection{Types}
+
 OCaml is a strongly, statically typed language. The compiler will
 infer the type of values, and will return an error if a type
 constraint is violated. For instance, the following function \code{f}
@@ -95,18 +113,6 @@ let f a b = a + b     (* has type int -> int -> int *)
 f 40 2                (* this type-checks *)
 f "4" "2"             (* this fails to type-check *)
 f 41.8 0.2            (* this also fails to type-check *)
-\end{lstlisting}
-
-Because functions are first-class values just like \code{int}s and
-\code{string}s, we can pass them to other functions. For instance, the
-function \code{List.map} takes a function \code{f} and a list
-\code{ls}, and returns a new list containing the result of applying
-\code{f} to each element of \code{ls}.
-
-\begin{lstlisting}
-let f x = x + 1
-let ls = [1;2;3;4]
-List.map f ls         (* returns the value [2;3;4;5] *)
 \end{lstlisting}
 
 OCaml allows the user to define complex types.
@@ -129,13 +135,6 @@ type book = {
 }
 \end{lstlisting}
 
-%% polymorphic variants
-
-\begin{lstlisting}
-(* Polymorphic variants *)
-type json = XXX
-\end{lstlisting}
-
 %% type variables
 
 Polymorphism in OCaml data types is expressed with type variables. In
@@ -148,22 +147,84 @@ type 'a tree =
   | Node of 'a tree * 'a tree
 \end{lstlisting}
 
-%% pattern matching
+\subsubsection{Polymorphic variants}
+
+OCaml has a feature called \emph{polymorphic variants}. These are
+similar to atoms or symbols in languages like Erlang or
+Scheme. Polymorphic variants are distinguished from regular variants
+by the backtick (\code{`}) preceeding the label. Unlike regular
+variants, polymorphic variants do not need to be capitalised, but this
+is still common practise. A common use of polymorphic variants is to
+encode inputs or outputs of functions; for instance, the below
+function uses polymorphic variants for encoding success and failure
+cases.
+
+\begin{lstlisting}
+let f = function
+  | `String v ->
+    Printf.printf "Got a string: %s\n" v;
+     `Success
+  | `Int v    ->
+    Printf.printf "Got an int: %s\n" v;
+    `Success
+  | `Float _  ->
+    print_endline "Wasn't expecting a float.";
+    `Failure
+\end{lstlisting}
+
+Polymorphic variants can be used in the same way as regular variant
+types, except that they don't need to be explicitly
+declared. Furthermore, any polymorphic variant with the same name is
+considered to be the same type (unlike regular variants, where
+identically named constructors may be protected inside of different
+modules, and therefore would be different types).
+
+This gives rise to useful patterns in API development, such as
+extensible API types. For instance, the Yojson library has an encoding
+of standard JSON, as well as common, useful extensions to the JSON
+spec. The standard JSON spec is encoded in \code{Yojson.Basic.json},
+whereas the extensions to the standard are encoded in
+\code{Yojson.Safe.json}. The \code{json} type in both modules uses
+polymorphic variants to define the json grammar, and ``Basic'' JSON
+can be easily upgraded to ``Safe'' JSON. A full treatment of this
+library can be found in Chapter 15 of Real World OCaml \cite{rwo}.
+
+\subsubsection{Pattern matching}
 
 One of the most powerful features of languages like OCaml is pattern
 matching. OCaml allows one to match over the structure of defined data
 types. Pattern matching can be accomplished with the
 \code{match value with | patt -> expr}
-expression, or in functions created with the \code{function} keyword.
+expression, or in functions created with the \code{function}
+keyword. The following two functions are equivalent.
 
 \begin{lstlisting}
-let rec num_leaves = function
+let rec num_leaves_1 = function
+  | Leaf _      -> 1
+  | Node (l, r) ->
+    (num_leaves l) + (num_leaves r)
+
+let rec num_leaves_2 tr =
+  match tr with
   | Leaf _      -> 1
   | Node (l, r) ->
     (num_leaves l) + (num_leaves r)
 \end{lstlisting}
 
-%% exceptions
+Note the use of the underscore (\code{_}) in the \code{Leaf}
+pattern. In OCaml, underscore means ``match anything.'' It can also be
+used in variable assignment, and is often used in module
+initialisation code.
+
+\subsubsection{Exceptions}
+
+OCaml has exceptions that follow the usual ``try/catch''
+pattern. OCaml exceptions have no ``finally'' clause, but this can be
+implemented in a library using first-class
+functions.\footnote{cf. \code{protect} and \code{protectx} in Jane
+  Street's Core library:
+  \url{https://ocaml.janestreet.com/ocaml-core/111.03.00/doc/core/#Exn}}
+Exceptions are declared similarly to variant data types.
 
 \begin{lstlisting}
 exception Not_found
@@ -174,9 +235,10 @@ let rec find x = function
                  else find x ls
 \end{lstlisting}
 
-Exceptions can also carry data:
+As with variants, exceptions can also carry data:
 
 \begin{lstlisting}
+exception Failure of string
 exception Error of [`Invalid_request of string | `Permissions]
 raise (Error (`Invalid_request "foo"))
 raise (Error `Permissions)
@@ -357,12 +419,18 @@ simpler change.
 \begin{lstlisting}
 module type DATABASE = sig ... end
 
-module Db : DATABASE
+module Db = struct ... end
+
+let f db =
+  let module Db = (val db : DATABASE) in
+  ...
+
+let _ = f (module Db : DATABASE)
 \end{lstlisting}
 
 \subsection{The rest of OCaml}
 
-Briefly mention OCaml's object system and class language, and point
+(XXX) Briefly mention OCaml's object system and class language, and point
 the reader to books and web resources.
 
 \section{Test Double patterns in detail}
