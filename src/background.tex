@@ -11,7 +11,6 @@ for functional languages such as OCaml and Haskell.
 \section{A brief tour of OCaml and its module system}
 \label{ocaml}
 
-%% XXX try this:
 %% https://tex.stackexchange.com/questions/106844/adding-words-to-lstlisting-for-python-langaue
 %% in order to get multiple levels of keywords
 \lstset{
@@ -154,7 +153,7 @@ similar to atoms or symbols in languages like Erlang or
 Scheme. Polymorphic variants are distinguished from regular variants
 by the backtick (\code{`}) preceeding the label. Unlike regular
 variants, polymorphic variants do not need to be capitalised, but this
-is still common practise. A common use of polymorphic variants is to
+is still common practice. A common use of polymorphic variants is to
 encode inputs or outputs of functions; for instance, the below
 function uses polymorphic variants for encoding success and failure
 cases.
@@ -349,8 +348,8 @@ signature \code{BAR}. The value \code{g} is now hidden, and
 
 \subsubsection{Functors}
 
-(XXX functors) In most languages, a module system is primarily meant
-to provide a namespacing system or a way to refer to compilation units
+In most languages, a module system is primarily meant to provide a
+namespacing system or a way to refer to compilation units
 (cf. Haskell's module system \cite{www:haskell:modules}, or Python's
 module system \cite{www:python:modules}). OCaml, however, has a much
 more powerful module system, including the ability to define
@@ -415,23 +414,40 @@ light-weight. Refactoring a module into a functor can be a significant
 amount of work, but adding a module arguement to a function is a much
 simpler change.
 
-%% XXX first class module example
 \begin{lstlisting}
 module type DATABASE = sig ... end
 
 module Db = struct ... end
 
 let f db =
+  (* Turn a module value into a module *)
   let module Db = (val db : DATABASE) in
   ...
 
+(* And convert a module into a value *)
 let _ = f (module Db : DATABASE)
 \end{lstlisting}
 
 \subsection{The rest of OCaml}
 
-(XXX) Briefly mention OCaml's object system and class language, and point
-the reader to books and web resources.
+%% Briefly mention OCaml's object system and class language, and point
+%% the reader to books and web resources.
+
+In additon to the module language described above, OCaml also has a
+rich class language and object system. Object orientation is a useful
+addition to OCaml, but most OCaml code in practice eschews the use of
+objects and classes. This dissertation will ignore the object oriented
+features of OCaml and instead focus on its functional core and module
+system. Most of the literature regarding software testing assumes
+an object oriented implementation langauge; this dissertations
+contributions lie elsewhere.
+
+This was a whirlwind tour of OCaml. It was meant to cover just enough
+syntax to get the reader through the OCaml examples in the next
+section, and to understand the implmentation in the following
+chapter. For more in-depth coverage, please see the OCaml language
+spec \cite{ocaml:spec}, and the excellent Real World OCaml book
+\cite{rwo}.
 
 \section{Test Double patterns in detail}
 \label{testdoubles}
