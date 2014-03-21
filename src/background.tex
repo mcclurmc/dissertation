@@ -3,19 +3,27 @@
 
 In this section we will provide a brief tour of the OCaml programming
 language, focusing espectially on its powerful module system. The
-chapter follows with an in-depth discussion of xUnit's Test Double
-patterns and their implementation in OCaml and Java. The chapter
-concludes with a summary of the current state-of-the-art testing tools
-for functional languages such as OCaml and Haskell.
+chapter follows with a discussion of xUnit's Test Double patterns and
+their implementation in OCaml and Java. The chapter concludes with a
+summary of the current state-of-the-art testing tools for functional
+languages such as OCaml and Haskell.
 
 \section{A brief tour of OCaml and its module system}
 \label{ocaml}
+
+%% XXX TODO: define commands to change settings for java and for ocaml
 
 %% https://tex.stackexchange.com/questions/106844/adding-words-to-lstlisting-for-python-langaue
 %% in order to get multiple levels of keywords
 \lstset{
   language=ML,
   morekeywords={function,module,match,try},
+  % XXX fix top/bottom frame margin spacing
+  % https://tex.stackexchange.com/questions/31598/lstlisting-produces-empty-row-when-used-inside-a-tabular
+  aboveskip=-\baselineskip,
+  %% framextopmargin=0pt,
+  %% framexbottommargin=10pt,
+  %% belowskip=10pt,
 }
 
 %% Want to talk quickly about code (functions, types, type inference),
@@ -268,10 +276,14 @@ called \code{foo.ml} would be placed into a module \code{Foo}.
 
 %% XXX not sure if we want these to come from separate files, or if we
 %% want to put a border around them, or...
-\lstinputlisting[
-  caption=foo.ml,
-  %frame=single,
-]{code/foo.ml}
+%% \lstinputlisting[
+%%   caption=foo.ml,
+%%   %frame=single,
+%% ]{code/foo.ml}
+\begin{lstlisting}
+type t = int
+let f a = a
+\end{lstlisting}
 
 From outside of this module, function \code{f} would be referenced as
 \code{Foo.f}. Module \code{Foo} has the following type:
@@ -287,7 +299,11 @@ the module type of the module created for that \code{ml} file is
 restricted to that of the signature specified in the \code{mli}
 file. For instance, if \code{foo.mli} is:
 
-\lstinputlisting[caption=foo.mli]{code/foo.mli}
+%\lstinputlisting[caption=foo.mli]{code/foo.mli}
+\begin{lstlisting}
+type t = int
+val f : ’a -> ’a
+\end{lstlisting}
 
 then the resulting type of module \code{Foo} would be:
 
@@ -445,7 +461,7 @@ contributions lie elsewhere.
 This was a whirlwind tour of OCaml. It was meant to cover just enough
 syntax to get the reader through the OCaml examples in the next
 section, and to understand the implmentation in the following
-chapter. For more in-depth coverage, please see the OCaml language
+chapter. For more extensive coverage, please see the OCaml language
 spec \cite{ocaml:spec}, and the excellent Real World OCaml book
 \cite{rwo}.
 
@@ -454,18 +470,105 @@ spec \cite{ocaml:spec}, and the excellent Real World OCaml book
 
 \begin{figure}
   \centering
-  \includegraphics[scale=1.0]{img/XXX.png}
+  \includegraphics[scale=0.7]{img/test_double_taxonomy.png}
   \caption[Taxonomy of Test Double patterns]{Taxonomy of Test Double patterns\footnotemark}
   \label{fig:taxonomy}
 \end{figure}
 \footnotetext{Adapted from Meszaros \cite{meszaros:xunit}}
 
-As figure \ref{fig:taxonomy} shows\dots
+%%% (XXX) As figure \ref{fig:taxonomy} shows\dots
 
-XXX disclaimer about the term ``Object'' when referring to test double
-patterns, and how we don't necessarily mean object in the OOP sense,
-because we can still use these patterns in a functional langauge
-without objects.
+\begin{table}
+  \centering
+  \begin{tabular}{c|c|c|c|c}
+    %% Header
+    & Implements Interface
+    & Indirect Inputs
+    & Indirect Outputs
+    & Configurable
+    \\ \hline
+    %% Rows
+    \textit{Dummy} & No & No & No & No \\ \hline
+    Stub & Yes & Yes & No & Yes        \\ \hline
+    Fake & Yes & No & No & N/A         \\ \hline
+    Spy & Yes & No & Yes & Yes         \\ \hline
+    Mock & Yes & Yes & Yes & Yes       \\ \hline
+  \end{tabular}
+  \caption{Foo}
+  \label{table:testdoubles}
+\end{table}
+
+Test Doubles allow developers to write tests that might have been
+difficult or even impossible to write without a Test Double. As their
+name suggests, Test Doubles are meant to stand in for a DOC of the
+SUT. Their name is analogous to ``stunt doubles'' used in films to
+stand in place for the main actor during dangerous scenes
+\cite{meszaros:xunit}.
+
+Meszaros describes three problematic scenarios for which Test Doubles
+may be an appropriate solution.
+
+\begin{description}
+
+\item [Untested Requirement] A particular SUT may have a system
+  requirement that needs to be excercised in a unit test, but testing
+  this behaviour requires observing interactions between the SUT and
+  one of its DOCs. If the DOC doesn't provide a mechanism for
+  observing these inputs and outputs, a Test Double may be used in
+  place of the DOC to observe the inderect inputs and outputs between
+  the SUT and the DOC.
+
+\item [Untested Code] A SUT may depend on a DOC which does not provide
+  the test case enough control over its inputs to propery excercise
+  the desired behaviour in the SUT. A Test Double for the DOC may be
+  used in order to put the UST into the state necessary to exercise
+  this behaviour.
+
+  Another instance of this issue occurs when the DOC has not been
+  written yet, but a test for the SUT still needs to be written. This
+  case often occurs in Test Driven Development (TDD) \cite{beck:tdd},
+  where tests are usually written either before or during the
+  development phase.
+
+\item [Slow Test] Slow tests can be a major problem because they
+  discourage the use of unit tests as part of the build process. A
+  test may be slow because a particular DOC takes a long time to
+  perform its task; perhaps it is performing a major calculation, or
+  is downloading a file over a slow network connection. In this case,
+  a Test Double may be used in place of the DOC in order to speed up
+  the test cases which require this DOC.
+
+\end{description}
+
+\subsubsection{Common pitfalls of the Test Double patterns}
+
+Using the Test Double patterns can make it easier to write unit tests,
+but missuse of the patterns can cause problems. Because we are
+replacing a DOC with a component that is custom-built for a particular
+test case, we must be careful to avoid overly tight coupling between
+the Test Double and the SUT. This can lead to \textit{Overspecified
+  Tests}, which are a type of the \textit{Fragile Test} anti-pattern
+\cite{meszaros:xunit}. A Fragile Test is one which may break due to
+changes in the SUT which do not affect the behaviour being tested.
+
+Another potential pitfall of misusing Test Doubles is the possibility
+that the developer may accidentally replace the part of the SUT which
+is being tested. This can be a severe problem, because tests for a
+particular behaviour will show as passing, even though that behaviour
+has never been excercised by the tests. Care should be taken when
+writing tests to ensure that the test actually excercises the
+behaviour under test.
+
+\subsubsection{A note on terminology}
+
+The xUnit Test Patterns book refers to the pattern as a \textit{Mock
+  Object}. While OCaml does have objects, we are primarily concerned
+with mocking OCaml modules. In the rest of this dissertation, we will
+use the term \textit{Mock Object} when referring specifically to the
+pattern described in the xUnit book, although we mean to apply this
+pattern to OCaml's modules. When speaking of a module that follows the
+Mock Object pattern, we may specifically refer to this as a
+\textit{Mock Module}.
 
 %% XXX We will want to include diagrams relating all the test double
 %% patterns, and describing them individually. The xunit web page has
@@ -474,8 +577,44 @@ without objects.
 
 % http://xunitpatterns.com/Mocks,%20Fakes,%20Stubs%20and%20Dummies.html
 
+\subsection{Fake Object pattern}
+\label{testdoubles:fake}
+
+\textbf{Fake Object} is a simpler version of the DOC which performs
+the same function with less complexity.
+
+(XXX lots of work!) A Fake Object is similar to a Dummy Object. While
+a Dummy Object may be as simple as using \code{null} in a language
+with nullable types, sometimes a more full implementation is
+required. A Fake Object is one which implements the interface of the
+DOC, but provides a simpler implementation. For instance, a database
+may be replaced by a simple hash table.
+
+%% (XXX) code example!
+
+\subsection{Test Stub pattern}
+\label{testdoubles:stub}
+
+\textbf{Test Stub} replaces a DOC in order to allow the test case to
+provide \textit{inderect inputs} to the SUT.
+
+(XXX) The Test Stub pattern is the first of the Test Double patterns
+which provides functionality specifically for the test case it is used
+for. A Test Stub is an implementation of the DOC's interface which can
+be programmed to provide set outputs when used by the SUT during the
+test. This mechanism is used by the test case to provide indirect
+inputs to the SUT via the DOC.
+
+%% (XXX) code example!
+
 \subsection{Dummy Object pattern}
 \label{testdoubles:dummy}
+
+\textbf{Dummy Object} is a special case of Test Stub which applies to
+value types. % simple types?
+
+(XXX) A \textit{Dummy Object} is a special case of a Stub Object. It is
+typically a\dots
 
 (XXX lots of work!) A Dummy Object is used in place of a DOC when the
 SUT requires a dependency for it's state, but the SUT doesn't use this
@@ -494,32 +633,11 @@ testability).)
 
 %% (XXX) code example!
 
-\subsection{Fake Object pattern}
-\label{testdoubles:fake}
-
-(XXX lots of work!) A Fake Object is similar to a Dummy Object. While
-a Dummy Object may be as simple as using \code{null} in a language
-with nullable types, sometimes a more full implementation is
-required. A Fake Object is one which implements the interface of the
-DOC, but provides a simpler implementation. For instance, a database
-may be replaced by a simple hash table.
-
-%% (XXX) code example!
-
-\subsection{Test Stub pattern}
-\label{testdoubles:stub}
-
-(XXX) The Test Stub pattern is the first of the Test Double patterns
-which provides functionality specifically for the test case it is used
-for. A Test Stub is an implementation of the DOC's interface which can
-be programmed to provide set outputs when used by the SUT during the
-test. This mechanism is used by the test case to provide indirect
-inputs to the SUT via the DOC.
-
-%% (XXX) code example!
-
 \subsection{Test Spy Object pattern}
 \label{testdoubles:spy}
+
+\textbf{Test Spy} replaces a DOC in order to record the SUT's
+\textit{inderect outputs} and provide them to the test case.
 
 (XXX) The Test Spy is used to to replace the DOC in the SUT and record
 the interactions that the SUT makes with the DOC. It is analogus to
@@ -530,6 +648,10 @@ DOC.
 
 \subsection{Mock Object pattern}
 \label{testdoubles:mocks}
+
+\textbf{Mock Object} combines the features of the Test Stub and Test
+Spy to provide both \textit{indirect inputs} to the SUT and record the
+SUT's \textit{indirect outputs}.
 
 (XXX) Basically combines Test Stub and Test Spy patterns in order to
 provide indirect inputs to the SUT, as well as verify the indirect
@@ -542,12 +664,22 @@ outputs from the SUT.
 \item xUnit implementations: HUnit \cite{www:hunit}, OUnit \cite{www:ounit}
 
 Unit testing frameworks for many languages follow the xUnit pattern of
-testing (\cite{junit} \cite{www:nunit} \cite{www:ruby:unit}), and
+testing (\cite{www:junit} \cite{www:nunit} \cite{www:ruby:unit}), and
 languages like Haskell and OCaml are no different \cite{www:hunit}
 \cite{www:ounit}.
+
+\begin{lstlisting}[
+    caption=Example of OUnit usage,
+    label=code:ounit,
+    aboveskip=\baselineskip,
+  ]
+let _ = OUnit.assert_equal 1 1 (* XXX *)
+\end{lstlisting}
 
 \item Kaputt for OCaml \cite{www:kaputt} (different than OUnit?)
 
 \item Haskell quickcheck \cite{claessen:quickcheck}
-\item Haskell benchmarking lib? \cite{www:criterion}
+
+\item Haskell benchmarking lib Criterion? \cite{www:criterion}
+
 \end{enumerate}
