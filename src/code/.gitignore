@@ -3,3 +3,10 @@
 *.cmo
 *.cmx
 *.o
+*.hi
+*.cache
+
+criterion
+hunit
+kaputt
+ounit

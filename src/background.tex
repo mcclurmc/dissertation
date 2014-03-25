@@ -491,7 +491,7 @@ spec \cite{ocaml:spec}, and the excellent Real World OCaml book
     & Interface
     & Inputs
     & Outputs
-    & 
+    &
     & Verification
     \\ \hline
     %% Rows
@@ -750,7 +750,15 @@ may allow the test to pass if it receives at least the outputs it was
 expecting, and may also allow out-of-order outputs. This behaviour
 would be configurable by the the mocking framework.
 
-%% TODO code example. Java and OCaml?
+\begin{lstlisting}[
+    caption={Example of JMock, a Java Mocking framework},
+    language=Java,
+    label=code:jmock,
+    aboveskip=\baselineskip,
+  ]
+// TODO: write an example of JMock usage, for later
+// comparison to MoCaml mocking library
+\end{lstlisting}
 
 \section{Tools for software testing in functional langauges}
 \label{testtools}
@@ -760,8 +768,7 @@ tests are targeted at more-poplular object oriented languages,
 many functional languages also have testing libraries. Here is a short
 summary of some of these libraries.
 
-\begin{enumerate}
-\item xUnit implementations: HUnit \cite{www:hunit}, OUnit \cite{www:ounit}
+\subsection{xUnit implementations}
 
 Unit testing frameworks for many languages follow the xUnit pattern of
 testing (\cite{www:junit} \cite{www:nunit} \cite{www:ruby:unit}), and
@@ -787,18 +794,79 @@ combinators for building test cases and suites (the \code{>::} and
 \code{>:::} operators in listing \ref{code:ounit}). Combinators such
 as these are idiomatic to both of these languages.
 
-\item Kaputt for OCaml \cite{www:kaputt}
+\subsection{Specification-based random testing in Haskell and OCaml with QuickCheck}
 
 % TODO
 
+John Hughes' and Koen Claessen's ICFP paper ``QuickCheck: A
+Lightweight Tool for Random Testing of Haskell Programs''
+\cite{claessen:quickcheck} described a method of \textit{specification
+  testing} that has since been ported to other languages, including
+OCaml \cite{code:ocaml-quickcheck} \cite{www:kaputt}.
 
+Specification testing is\dots
 
-\item Haskell quickcheck \cite{claessen:quickcheck}
+Specification testing is well suited to functional lanaguages,
+especially those which restrict or eliminate mutability and
+side-effects, such as Haskell\dots
+
+\subsection{Kaputt: assertion and specification test library for OCaml}
+
+Kaputt is another full-featured unit testing library for OCaml
+\cite{www:kaputt}. In addition to supporting xUnit-style assertion
+tests, it also supports QuickCheck-style specification testing.
+
+\lstinputlisting[
+    caption=Example of Kaputt usage,
+    label=code:kaputt,
+    aboveskip=\baselineskip,
+]{code/kaputt_example.ml}
+
+As you can see from listing \ref{code:kaputt}, Kaputt's basic usage is
+similar to that of OUnit, if not slightly more verbose. Kaputt also
+supports specification-based testing, in the style of QuickCheck.
+
+\lstinputlisting[
+    caption=Example of Kaputt's specification-testing features,
+    label=code:kaputt-spec,
+    aboveskip=\baselineskip,
+]{code/kaputt_specification.ml}
+
+Kaputt also provides support for creating Mock functions, but this
+part of the library is not as well developed as its assertion and
+specification-based testing capabilities. Kaputt provides functions
+for creating Mock functions which can record the number of times the
+Mock has been called with a certain input value, and which can output
+specified responses. It does not provide the ability to automatically
+generate Mock Modules, nor does it provide capabilities for injecting
+a Mock into a SUT. While it can record a SUT's indirect outputs, it
+does not provide the ability to perform behaviour verification; this
+must be performed manually by the test case. In this respect, Kaputt
+provides features to aid developers in writing their own hard-coded
+Mock functions, but little more.
+
+\lstinputlisting[
+    caption=Annotated example of Kaputt's mock features\footnotemark,
+    label=code:kaputt-mock,
+    aboveskip=\baselineskip,
+]{code/kaputt_mock.ml}
+\footnotetext{Un-annotated example adapted from Kaputt's
+  manual: \url{http://kaputt.x9c.fr/distrib/kaputt.html#mock-example}}
+
+In the example in listing \ref{code:kaputt-mock}, the call to
+\code{List.map} is actually the SUT, and the function \code{succ} is
+our DOC, for which we create the Mock \code{f}. This is a simplistic
+example meant to demonstrate creating Mock functions using Kaputt, and
+not to demonstrate proper testing procedure.
+
+\subsection{Criterion: Haskell benchmarking library}
 
 % TODO
 
-\item Haskell benchmarking lib Criterion? \cite{www:criterion}
+\lstinputlisting[
+    caption=Example of Criterion benchmark library,
+    label=code:criterion,
+    aboveskip=\baselineskip,
+]{code/criterion_example.hs}
 
-% TODO
-
-\end{enumerate}
+% Criterion \cite{www:criterion}
