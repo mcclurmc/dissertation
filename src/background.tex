@@ -72,7 +72,7 @@ languages such as OCaml and Haskell.
 OCaml is a strongly, statically typed functional programming language
 based on the ML family of languages. It may be interpreted in a
 read-eval-print loop called the OCaml ``toplevel,'' or it may be
-compiled to an OCaml specific bytecode languate or to a native
+compiled to an OCaml specific bytecode language or to a native
 executable. \cite{ocaml:spec} It has a very good generational garbage
 collector tuned for sequential programs. \cite{ocaml:gc_tutorial}
 
@@ -80,7 +80,7 @@ What follows is a \textit{very} brief tour of the OCaml programming
 language. This should hopefully be enough to allow the reader to
 follow along with the coding examples later in this chapter and the
 next. For more assistance with OCaml, the reader is directed to the
-OCaml Langauge Specification \cite{ocaml:spec}, and Real World OCaml
+OCaml Language Specification \cite{ocaml:spec}, and Real World OCaml
 \cite{rwo}\footnote{Real World OCaml is available for free online:
   \url{https://realworldocaml.org}}
 
@@ -113,7 +113,7 @@ Printf.printf "num is now %d\n" !num
 
 Functions are created with the keywords \code{fun} or \code{function},
 and assigned names using \code{let}, just like other values. Functions
-defined using the \code{function} keyword can only take one arguement,
+defined using the \code{function} keyword can only take one argument,
 but that argument can be pattern-matched.
 
 \begin{lstlisting}
@@ -166,7 +166,7 @@ OCaml allows the user to define complex types.
 type position = int * int
 
 (* Variant types *)
-type colors =
+type colours =
   | Red of int
   | Green of int
   | Blue of int
@@ -196,7 +196,7 @@ type 'a tree =
 OCaml has a feature called \emph{polymorphic variants}. These are
 similar to atoms or symbols in languages like Erlang or
 Scheme. Polymorphic variants are distinguished from regular variants
-by the backtick (\code{`}) preceeding the label. Unlike regular
+by the backtick (\code{`}) preceding the label. Unlike regular
 variants, polymorphic variants do not need to be capitalised, but this
 is still common practice. A common use of polymorphic variants is to
 encode inputs or outputs of functions; for instance, the below
@@ -330,7 +330,7 @@ type t = int
 val f : 'a -> 'a
 \end{lstlisting}
 
-The types of modules can be restricted useing \code{mli} files. When
+The types of modules can be restricted using \code{mli} files. When
 an \code{mli} file exists with the same basename as an \code{ml} file,
 the module type of the module created for that \code{ml} file is
 restricted to that of the signature specified in the \code{mli}
@@ -384,7 +384,7 @@ We can limit the type of \code{module Bar} to the signature
 module Bar2 = (Bar : BAR)
 \end{lstlisting}
 
-We can also restrict the orignal definition of \code{module Bar}:
+We can also restrict the original definition of \code{module Bar}:
 
 \begin{lstlisting}
 module Bar1 : BAR =
@@ -409,7 +409,7 @@ more powerful module system, including the ability to define
 \textit{functors}.
 
 A functor is a relation from modules to modules. A functor can take a
-module as an arguement, and use it to specialise another module. For
+module as an argument, and use it to specialise another module. For
 instance, here is an example adapted from the OCaml language
 ``Introduction to OCaml'' \cite{ocaml:spec} that creates a \code{Set}
 functor.
@@ -449,7 +449,7 @@ definition which is more concise. For instance, we could have defined
 the \code{Set} functor as:
 \code{module Set(Elt : ORDERED_TYPE) = struct ... end}.
 This comes in handy when one is defining a functor which takes
-multiple arguements:
+multiple arguments:
 \code{module F(A : X)(B : Y) = struct ... end} .
 
 Functors are useful for creating generic data types, such as the
@@ -459,12 +459,12 @@ be useful for dependency injection.
 \subsubsection{First-class modules}
 
 OCaml 4.00 introduced the feature of \textit{first-class modules}. A
-first-class module is analogous to a language having first-cass
+first-class module is analogous to a language having first-class
 functions: a module in OCaml can be packaged into a value, passed to
 functions, and returned from functions. First-class modules provide a
 similar capability as functors do, but are much more
 light-weight. Refactoring a module into a functor can be a significant
-amount of work, but adding a module arguement to a function is a much
+amount of work, but adding a module argument to a function is a much
 simpler change.
 
 \begin{lstlisting}
@@ -486,18 +486,18 @@ let _ = f (module Db : DATABASE)
 %% Briefly mention OCaml's object system and class language, and point
 %% the reader to books and web resources.
 
-In additon to the module language described above, OCaml also has a
+In addition to the module language described above, OCaml also has a
 rich class language and object system. Object orientation is a useful
 addition to OCaml, but most OCaml code in practice eschews the use of
 objects and classes. This dissertation will ignore the object oriented
 features of OCaml and instead focus on its functional core and module
 system. Most of the literature regarding software testing assumes
-an object oriented implementation langauge; this dissertations
+an object oriented implementation language; this dissertations
 contributions lie elsewhere.
 
 This was a whirlwind tour of OCaml. It was meant to cover just enough
 syntax to get the reader through the OCaml examples in the next
-section, and to understand the implmentation in the following
+section, and to understand the implementation in the following
 chapter. For more extensive coverage, please see the OCaml language
 spec \cite{ocaml:spec}, and the excellent Real World OCaml book
 \cite{rwo}.
@@ -557,17 +557,17 @@ may be an appropriate solution.
 \begin{description}
 
 \item [Untested Requirement] A particular SUT may have a system
-  requirement that needs to be excercised in a unit test, but testing
+  requirement that needs to be exercised in a unit test, but testing
   this behaviour requires observing interactions between the SUT and
   one of its DOCs. If the DOC doesn't provide a mechanism for
   observing these inputs and outputs, a Test Double may be used in
-  place of the DOC to observe the inderect inputs and outputs between
+  place of the DOC to observe the indirect inputs and outputs between
   the SUT and the DOC.
 
 \item [Untested Code] A SUT may depend on a DOC which does not provide
-  the test case enough control over its inputs to propery excercise
+  the test case enough control over its inputs to properly exercise
   the desired behaviour in the SUT. A Test Double for the DOC may be
-  used in order to put the UST into the state necessary to exercise
+  used in order to put the SUT into the state necessary to exercise
   this behaviour.
 
   Another instance of this issue occurs when the DOC has not been
@@ -592,8 +592,8 @@ Test Doubles have the benefit of being able to provide
 \textit{indirect inputs} to the SUT, and to receive \textit{indirect
   outputs} from the SUT.
 
-When excercising the SUT, we often need a way to control the
-excecution path of the SUT from the test case. In many cases, this is
+When exercising the SUT, we often need a way to control the
+execution path of the SUT from the test case. In many cases, this is
 not directly possible, because the SUT bases its execution path from
 inputs received from one of its DOCs. These inputs are known as
 \textit{indirect inputs}. In order to provide indirect inputs to the
@@ -628,7 +628,7 @@ place of the DOC (see table \ref{table:testdoubles}).
 \subsubsection{Common pitfalls of the Test Double patterns}
 
 Using the Test Double patterns can make it easier to write unit tests,
-but missuse of the patterns can cause problems. Because we are
+but misuse of the patterns can cause problems. Because we are
 replacing a DOC with a component that is custom-built for a particular
 test case, we must be careful to avoid overly tight coupling between
 the Test Double and the SUT. This can lead to \textit{Overspecified
@@ -640,8 +640,8 @@ Another potential pitfall of misusing Test Doubles is the possibility
 that the developer may accidentally replace the part of the SUT which
 is being tested. This can be a severe problem, because tests for a
 particular behaviour will show as passing, even though that behaviour
-has never been excercised by the tests. Care should be taken when
-writing tests to ensure that the test actually excercises the
+has never been exercised by the tests. Care should be taken when
+writing tests to ensure that the test actually exercises the
 behaviour under test.
 
 \subsubsection{A note on terminology}
@@ -692,7 +692,7 @@ A \textit{Dummy Object} is a special case of a Stub Object. It is used
 specifically when the SUT does not interact with the DOC at all during
 the test, but a value for the DOC is still required in order to
 initialise the SUT. For instance, the SUT may be a method of a class
-which requires certain vaules to be constructed, but the SUT itself
+which requires certain values to be constructed, but the SUT itself
 doesn't make use of those values during the test. In a language with
 nullable types, such as Java, a Dummy Object may simply be the
 \code{null} value. In a language like OCaml, a Dummy Object may be a
@@ -726,7 +726,7 @@ value.
 \label{testdoubles:stub}
 
 \definition{Test Stub} replaces a DOC in order to allow the test case
-to provide \textit{inderect inputs} to the SUT.
+to provide \textit{indirect inputs} to the SUT.
 
 The Test Stub pattern is the first of the Test Double patterns which
 provides functionality specifically for the test case it is used
@@ -751,7 +751,7 @@ Stub DOC.
 \textit{indirect outputs} and provide them to the test case.
 
 The Test Spy is used to to replace the DOC in the SUT and record
-the interactions that the SUT makes with the DOC. It is analogus to
+the interactions that the SUT makes with the DOC. It is analogous to
 the the Test Stub, but it works in the opposite way: instead of
 providing indirect inputs from the test case to the SUT via the DOC,
 it provides indirect outputs from the SUT to the test case via the
@@ -759,7 +759,7 @@ DOC.
 
 The Test Spy is created in the same fashion as the Test Stub, and
 inserted into the SUT in the same way. After the SUT has been
-excercised, the test case may retrieve the SUT's indirect outputs from
+exercised, the test case may retrieve the SUT's indirect outputs from
 the Test Spy and proceed with the evaluation of the test.
 
 \subsection{Mock Object pattern}
@@ -768,7 +768,7 @@ the Test Spy and proceed with the evaluation of the test.
 \definition{Mock Object} combines the features of the Test Stub and
 Test Spy to provide both \textit{indirect inputs} to the SUT and
 record the SUT's \textit{indirect outputs}, as well as perform
-\textit{behviour verification}.
+\textit{behaviour verification}.
 
 A Mock Object combines the features of a Test Stub and a Test Spy. It
 is typically configurable at run time -- Mock Objects are usually not
@@ -779,7 +779,7 @@ to the SUT, as well as recording indirect outputs from the SUT.
 The single distinguishing feature of the Mock Object, which makes it
 different than just a Test Double which behaves as both a Stub and a
 Spy, is that it is capable of performing \textit{behaviour
-  verification}. While a Test Spy simply peforms the task of recording
+  verification}. While a Test Spy simply performs the task of recording
 the indirect outputs of the SUT for later reading by the test case, a
 Mock Object provides facilities for verifying the correctness of the
 indirect outputs from the SUT. A Mock Object may be either
@@ -832,7 +832,7 @@ be in during the test, and behave accordingly.
 \label{testtools}
 
 While much of the literature about and libraries for writing unit
-tests are targeted at more-poplular object oriented languages,
+tests are targeted at more-popular object oriented languages,
 many functional languages also have testing libraries. Here is a short
 summary of some of these libraries.
 
@@ -845,7 +845,7 @@ languages like Haskell and OCaml are no different \cite{www:hunit}
 testing frameworks for the language. It provides assertion functions
 that can be used to verify that a test case has passed or failed,
 combinators for grouping test cases into suites of tests, and helpers
-for enabling or dissabling individual test cases.
+for enabling or disabling individual test cases.
 
 \lstinputlisting[
     caption=Example of OUnit usage,
@@ -958,7 +958,7 @@ Prelude Test.QuickCheck> quickCheck rev_Append
 \end{verbatim}
 \normalsize
 
-Specification testing is well suited to functional lanaguages,
+Specification testing is well suited to functional languages,
 especially those which restrict or eliminate mutability and
 side-effects, such as Haskell. It is common to write Haskell code
 which separates side-effecting functions (those that operate under the
