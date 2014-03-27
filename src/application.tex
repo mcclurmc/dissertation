@@ -1,22 +1,54 @@
 \chapter{Application}
 \label{application}
 
-\section{Brief explanation of camlp4 preprocessing technique that will be used}
+We will now discuss the application of the Mock Object pattern to the
+OCaml programming language. In this chapter we will cover dependency
+injection techniques in OCaml, the manual creation of a mock module
+and expectations, a domain specific language for specifying
+expectations in OCaml, and the automatic generation of mock modules
+from a module interface.
 
-%% \section{Treatment of OCaml's module system}
+\section{Dependency injection methods in OCaml}
+\label{application:di}
 
-\section{Description of DI techniques in OCaml}
+Dependency injection (DI) techniqes in object oriented languages
+typically focus on lifting hard-coded dependencies into a class's
+constructor so that dependencies can be injected at object creation
+time. In OCaml things are not much different, except that we will use
+language features such as functors and first-class modules for
+injecting module dependencies. Complex functionality typically found
+in more mature DI frameworks is not necessary for the rest of this
+work, and we will not describe their implementation here.
 
-Functorising modules to inject dependencies, and first-class modules
-for DI.
+\section{Manually-written Mock Modules}
+\label{application:manual-mock}
 
-\section{Explanation of my mock and expectation implementation}
+Before we can automatically generate a mock module from a given
+interface, we must first describe how to create manually-written
+(hard-coded) mock modules.
 
-The techniques that I produce for my library will be the main academic
-contribution of my dissertation.
+\section{Specifying a Mock's expectations}
+\label{application:expectations}
 
-\section{Comparison of tests written using my and other frameworks}
+Much of the Mock Pattern's power comes from having a lightweight
+expectation specification DSL. In this section we describe the design
+and implementation of an expectation DSL in OCaml which is similar to
+the JMock expectation DSL described in section
+\ref{testdoubles:mocks}.
 
-a) no mocking technique, b) Kaputt mocking library, c) MoCaml mocking
-library. Demonstrate pros and cons of each technique, and describe
-when one would prefer one over the other.
+\section{Automatically generating Mock Modules}
+\label{application:generation}
+
+Mocks are only truely useful as a testing tool when they can be
+automatically generated from an interface. We will use Camlp4, an
+OCaml preprocessing tool, a new OCaml feature called \textit{extension
+  points} used for AST annotation, and the OCaml compiler's
+\textit{compiler-libs} in order to generate and pretty-print OCaml
+code.
+
+\section{Comparison of mocking frameworks}
+\label{application:comparison}
+
+Compare MoCaml, manual mocking with Kaputt, and JMock. Demonstrate
+pros and cons of each framework. Should this go in the Reflections
+chapter? Probably.

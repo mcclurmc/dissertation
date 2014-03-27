@@ -1,3 +1,10 @@
+%% Remaining TODO items:
+%% - [X] make sure that code examples are finished (JMock needs work)
+%% - [ ] adapt graphic descriptions of test patterns from xUnit book
+%% - [ ] consider code examples of test pattersn besides mock objects
+%% - [ ] consider changing the mock example to follow Freeman's turtle
+%%       example
+
 \chapter{Background}
 \label{background}
 
@@ -11,14 +18,44 @@ languages such as OCaml and Haskell.
 \section{A brief tour of OCaml and its module system}
 \label{ocaml}
 
-%% XXX TODO: define commands to change settings for java and for ocaml
+%% Define commands to change settings for Java and for OCaml. Need to
+%% play with these more. Found this example at:
+%% https://tex.stackexchange.com/questions/10141/how-to-prevent-lstlisting-from-splitting-code-between-pages
+\lstnewenvironment{ocaml}[1][]%
+  {\minipage{\linewidth} 
+    \lstset{
+      basicstyle=\ttfamily\footnotesize,
+      language=ML,
+      morekeywords={function,module,match,try},
+      aboveskip=-\baselineskip,
+      #1}}
+  {\endminipage}
+
+\lstnewenvironment{haskell}[1][]%
+  {\minipage{\linewidth} 
+    \lstset{
+      basicstyle=\ttfamily\footnotesize,
+      language=Haskell,
+      morekeywords={function,module,match,try},
+      aboveskip=-\baselineskip,
+      #1}}
+  {\endminipage}
+
+\lstnewenvironment{java}[1][]%
+  {\minipage{\linewidth} 
+    \lstset{
+      basicstyle=\ttfamily\footnotesize,
+      language=Java,
+      aboveskip=-\baselineskip,
+      #1}}
+  {\endminipage}
 
 %% https://tex.stackexchange.com/questions/106844/adding-words-to-lstlisting-for-python-langaue
 %% in order to get multiple levels of keywords
 \lstset{
   language=ML,
   morekeywords={function,module,match,try},
-  % XXX fix top/bottom frame margin spacing
+  % Fix top/bottom frame margin spacing:
   % https://tex.stackexchange.com/questions/31598/lstlisting-produces-empty-row-when-used-inside-a-tabular
   aboveskip=-\baselineskip,
   %% framextopmargin=0pt,
@@ -468,6 +505,8 @@ spec \cite{ocaml:spec}, and the excellent Real World OCaml book
 \section{Test Double patterns in detail}
 \label{testdoubles}
 
+%% XXX consider citing Gibbons \cite{gibbons:patterns}
+
 \begin{figure}
   \centering
   \includegraphics[scale=0.7]{img/test_double_taxonomy.png}
@@ -641,7 +680,7 @@ hard-coded results without the need to access the network. A database
 may be replaced by a simpler data store such as a hash table or other
 in-memory database.
 
-%% TODO code example
+%% TODO code example?
 
 \subsection{Dummy Object pattern}
 \label{testdoubles:dummy}
@@ -651,19 +690,20 @@ to value types.
 
 A \textit{Dummy Object} is a special case of a Stub Object. It is used
 specifically when the SUT does not interact with the DOC at all during
-the test, but a value for the DOC is still required for the SUT to
-run. For instance, the SUT may be a method of a class which requires
-certain vaules to be constructed, but the SUT itself doesn't make use
-of those values during the test. In a language with nullable types,
-such as Java, a Dummy Object may simply be the \code{null} value. In a
-language like OCaml, a Dummy Object may be a value, such as a simple
-type constructor. A more complex type may have a ``default'' or
-``empty'' value that can be used. This is often the case with record
-types, for which programmers often create an ``empty'' value which
-they can extend to create more complex values. Many standard library
-containers have either an empty default value, or a simple
-constructor, for instance \code{Set.empty} or the value constructor
-\code{Buffer.create}, which takes a single integer value.
+the test, but a value for the DOC is still required in order to
+initialise the SUT. For instance, the SUT may be a method of a class
+which requires certain vaules to be constructed, but the SUT itself
+doesn't make use of those values during the test. In a language with
+nullable types, such as Java, a Dummy Object may simply be the
+\code{null} value. In a language like OCaml, a Dummy Object may be a
+value, such as a simple type constructor. A more complex type may have
+a ``default'' or ``empty'' value that can be used. This is often the
+case with record types, for which programmers often create an
+``empty'' value which they can extend to create more complex
+values. Many standard library containers have either an empty default
+value, or a simple constructor, for instance \code{Set.empty} or the
+value constructor \code{Buffer.create}, which takes a single integer
+value.
 
 %% A Dummy Object is used in place of a DOC when the SUT requires a
 %% dependency for it's state, but the SUT doesn't use this dependency
@@ -680,7 +720,7 @@ constructor, for instance \code{Set.empty} or the value constructor
 %% ``dummy instantiator'' in that module (which is also a form of
 %% refactoring for testability).)
 
-%% TODO code example
+%% TODO code example?
 
 \subsection{Test Stub pattern}
 \label{testdoubles:stub}
@@ -702,7 +742,7 @@ into the SUT using some form of dependency injection. When the test is
 run, the SUT receives indirect inputs from the test case via the Test
 Stub DOC.
 
-%% TODO code example
+%% TODO code example?
 
 \subsection{Test Spy Object pattern}
 \label{testdoubles:spy}
@@ -750,15 +790,43 @@ may allow the test to pass if it receives at least the outputs it was
 expecting, and may also allow out-of-order outputs. This behaviour
 would be configurable by the the mocking framework.
 
-\begin{lstlisting}[
+%% XXX Consider just using the "turtle" example from Growing
+\lstinputlisting[
     caption={Example of JMock, a Java Mocking framework},
     language=Java,
     label=code:jmock,
     aboveskip=\baselineskip,
-  ]
-// TODO: write an example of JMock usage, for later
-// comparison to MoCaml mocking library
-\end{lstlisting}
+  ] {code/java/jmock-example/src/test/java/JMockTest.java}
+
+JMock is a mocking framework for the Java language. It is highly
+configurable, and provides a domain specific language (DSL) for
+configuring expectations \cite{freeman:evolving}. JMock's
+expectation language provides many features beyond what is discussed
+in the xUnit book. Listing \ref{code:jmock} is a small example of
+using JMock, a Java mocking framework, in a test case.
+
+\footnotesize
+\begin{verbatim}
+invocation-count(mock-object).method(argument-constraints);
+  inSequence(sequence-name);
+  when(state-machine.is(state-name);
+  will(action);
+  then(state-machine.is(new-state-name));
+\end{verbatim}
+\normalsize
+
+Above is a pseudo-code notation of the expectation format that JMock
+supports \cite{freeman:growing}. In addition to invocation counts and
+method argument matchers and value returners, JMock provides both
+\textit{sequences} and \textit{state machines} for use in mocks.
+
+A sequence is a way of specifying that a series of invocations listed
+in a mock's expectations are meant to occur in the specified order (a
+\textit{strict} mock). Unless an invocation is added to a sequence,
+the order of execution is not significant (a \textit{lenient}
+mock). JMock also allows expectations to define simple state machines,
+so that expectations can keep track of the state that the SUT should
+be in during the test, and behave accordingly.
 
 \section{Tools for software testing in functional langauges}
 \label{testtools}
@@ -794,24 +862,6 @@ combinators for building test cases and suites (the \code{>::} and
 \code{>:::} operators in listing \ref{code:ounit}). Combinators such
 as these are idiomatic to both of these languages.
 
-\subsection{Specification-based random testing in Haskell and OCaml with QuickCheck}
-
-% TODO
-
-John Hughes' and Koen Claessen's ICFP paper ``QuickCheck: A
-Lightweight Tool for Random Testing of Haskell Programs''
-\cite{claessen:quickcheck} described a method of \textit{specification
-  testing} that has since been ported to other languages, including
-OCaml \cite{code:ocaml-quickcheck} \cite{www:kaputt}.
-
-Specification testing is\dots
-
-Specification testing is well suited to functional lanaguages,
-especially those which restrict or eliminate mutability and
-side-effects, such as Haskell\dots
-
-\subsection{Kaputt: assertion and specification test library for OCaml}
-
 Kaputt is another full-featured unit testing library for OCaml
 \cite{www:kaputt}. In addition to supporting xUnit-style assertion
 tests, it also supports QuickCheck-style specification testing.
@@ -822,9 +872,12 @@ tests, it also supports QuickCheck-style specification testing.
     aboveskip=\baselineskip,
 ]{code/kaputt_example.ml}
 
+%% XXX Consider moving this paragraph to the QuickCheck section
+
 As you can see from listing \ref{code:kaputt}, Kaputt's basic usage is
 similar to that of OUnit, if not slightly more verbose. Kaputt also
-supports specification-based testing, in the style of QuickCheck.
+supports specification-based testing, in the style of QuickCheck, as
+shown in listing \ref{code:kaputt-spec}.
 
 \lstinputlisting[
     caption=Example of Kaputt's specification-testing features,
@@ -859,9 +912,67 @@ our DOC, for which we create the Mock \code{f}. This is a simplistic
 example meant to demonstrate creating Mock functions using Kaputt, and
 not to demonstrate proper testing procedure.
 
+\subsection{Specification-based random testing with QuickCheck}
+
+Koen Claessen's and John Hughes' ICFP paper ``QuickCheck: A
+Lightweight Tool for Random Testing of Haskell Programs''
+\cite{claessen:quickcheck} described a method of \textit{specification
+  testing} that has since been ported to other languages, including
+OCaml \cite{code:ocaml-quickcheck} \cite{www:kaputt}.
+
+Specification testing is a method of describing the properties of the
+SUT as specifications, and using random generators to attempt to
+disprove the specification. For instance, say we want to test the
+\code{reverse} function.\footnote{This is an example from Claessen's
+  and Hughes' QuickCheck paper \cite{claessen:quickcheck}} This
+function has the following properties:
+
+\footnotesize
+\begin{verbatim}
+reverse [x]          = reverse [x]
+reverse (xs++ys)     = reverse xs ++ reverse ys
+reverse (reverse xs) = xs
+\end{verbatim}
+\normalsize
+
+We can easily specify these properties in Haskell.
+
+\begin{lstlisting}[code=Haskell]
+rev_Unit x =
+  reverse [x] == reverse [x]
+
+rev_Append xs ys =
+  reverse (xs ++ ys) == reverse xs ++ reverse ys
+
+rev_Identity xs =
+  reverse (reverse xs) == xs
+\end{lstlisting}
+
+And we can execute these specifications using quickCheck:
+
+\footnotesize
+\begin{verbatim}
+Prelude Test.QuickCheck> quickCheck rev_Append
+
++++ OK, passed 100 tests.
+\end{verbatim}
+\normalsize
+
+Specification testing is well suited to functional lanaguages,
+especially those which restrict or eliminate mutability and
+side-effects, such as Haskell. It is common to write Haskell code
+which separates side-effecting functions (those that operate under the
+IO monad) from \textit{pure} functions which have no side
+effects. These pure functions can then be tested using QuickCheck. 
+
 \subsection{Criterion: Haskell benchmarking library}
 
-% TODO
+While it isn't a unit testing library like HUnit or OUnit, Criterion
+\cite{www:criterion} is a useful Haskell library for running
+benchmarks. It is particularly interesting because of the attention to
+statistical detail that the library provides. Each benchmark run is
+calibrated against the system clock, and benchmarking runs with a high
+degree of variance are flagged to the user.
 
 \lstinputlisting[
     caption=Example of Criterion benchmark library,
@@ -869,4 +980,39 @@ not to demonstrate proper testing procedure.
     aboveskip=\baselineskip,
 ]{code/criterion_example.hs}
 
-% Criterion \cite{www:criterion}
+Below we see the command line output shown from running the code in
+listing \ref{code:criterion}, while figure \ref{fig:criterion} is part
+of the graphical output from running this program. In this image we
+see that Criterion gives us both the raw time data (graph on the
+right), and a kernel density estimate of the time data (graph on the
+left).
+
+\footnotesize
+\begin{verbatim}
+warming up
+estimating clock resolution...
+mean is 1.119713 us (640001 iterations)
+found 65667 outliers among 639999 samples (10.3%)
+  5404 (0.8%) low severe
+  60263 (9.4%) high severe
+estimating cost of a clock call...
+mean is 58.35944 ns (7 iterations)
+
+benchmarking fib/10
+mean: 3.819773 us, lb 3.709738 us, ub 3.968785 us, ci 0.950
+std dev: 653.0665 ns, lb 506.8601 ns, ub 834.0847 ns, ci 0.950
+found 13 outliers among 100 samples (13.0%)
+  6 (6.0%) high mild
+  7 (7.0%) high severe
+variance introduced by outliers: 92.538%
+variance is severely inflated by outliers
+\end{verbatim}
+\normalsize
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.45]{img/criterion.png}
+  \caption[Criterion Output]{Output from the benchmarking library Criterion}
+  \label{fig:criterion}
+\end{figure}
+
