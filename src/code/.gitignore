@@ -5,6 +5,7 @@
 *.o
 *.hi
 *.cache
+*.byte
 
 criterion
 hunit
