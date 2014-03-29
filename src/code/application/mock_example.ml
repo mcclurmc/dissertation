@@ -14,7 +14,8 @@ module type TURTLE =
     val pen_down : t -> unit
   end
 
-(* Because I might want to monadify this... *)
+(* Because I might want to monadify this... It's looking an awefully
+   lot like the state monad. *)
 module type MONAD =
   sig
     type 'a t
@@ -65,7 +66,6 @@ module TurtleMock = struct
              (* XXX we *definitely* need GADTs! *)
              | `unit | `position of TurtleTypes.position ]
 
-  (* Consider monads here, just for bonus points ;) *)
   module type EXPECTATIONS =
     sig
       type t
@@ -73,15 +73,14 @@ module TurtleMock = struct
       type occurance
       val return : action
       val raises : action
-      val will : action -> rets -> funs -> funs
+      val will : action -> rets -> (funs * t list) -> (funs * t list)
       val once : occurance
       val never : occurance
       val at_least : int -> occurance
       val at_most : int -> occurance
       val between : int -> int -> occurance
-      val occurs : occurance -> funs -> funs
-      val ($) : funs -> funs -> funs
-      val (>>) : funs -> (funs -> funs) -> funs
+      val occurs : occurance -> (funs * t list) -> (funs * t list)
+      val (>>) : 'a -> ('a -> 'a) -> 'a
     end
   module Expectations : EXPECTATIONS =
     struct
@@ -93,8 +92,8 @@ module TurtleMock = struct
 
       and action = Return | Raises
 
-      and occurance = Once | Never | AtMost of int | AtLeast of int
-                      | Between of (int * int)
+      and occurance =
+        Once | Never | AtMost of int | AtLeast of int | Between of (int * int)
 
       let return = Return
       and raises = Raises
@@ -102,7 +101,7 @@ module TurtleMock = struct
       (* XXX This won't work for throwing exceptions. Need to either
          have ret also contain exceptions, or have action (Return |
          Raises) carry it's value and remove ret. *)
-      let will (action : action) (ret : rets) (f : funs) = f (* C.ctx *)
+      let will action ret (f,e) = f, e (* C.ctx *)
 
       let once = Once
       and never = Never
@@ -110,22 +109,21 @@ module TurtleMock = struct
       and at_least i = AtLeast i
       and between i j = Between (i,j)
 
-      let occurs o f =
+      let occurs o (f,e) =
         (* Retrieve f from hashtbl, prepend o to it, and store it *)
         (* XXX shit, do we not have access to the context now? of
            course not, because we need these definitions to define the
            context >:( Looks like the only solution is to pass a pair
            of f and its expectations along, and then store them at the
            end. *)
-        f
+        f,e
 
       (* Combinator-based expectation language. We bind together
          expectations with (>>), which simply carries the function
          name over throughout the sequence of expectation creation
          functions. ($) is used to string together expectations. I
          can't think of a nicer-looking way to do this... *)
-      let (>>) f op = op f
-      let ($) a b = b
+      let (>>) e f = f e
     end
 
   (* The mock's "context" (actual type TBD). *)
@@ -143,54 +141,47 @@ module TurtleMock = struct
   module type GENEXPS =
     sig
       include EXPECTATIONS
+      val save : (funs * t list) -> unit
       (* Generated *)
-      val get_position : funs
-      val move_forward : funs
-      val turn : funs
-      val pen_up : funs
-      val pen_down :funs
+      val get_position : funs * t list
+      val move_forward : funs * t list
+      val turn : funs * t list
+      val pen_up : funs * t list
+      val pen_down :funs * t list
     end
   module E (C : CONTEXT) : GENEXPS =
     struct
       include Expectations
-      (* Shorthand for the function names *)
-      let get_position = `get_position
-      and move_forward = `move_forward
-      and turn = `turn
-      and pen_up = `pen_up
-      and pen_down = `pen_down
+      let save (f, ctx) = ()    (* XXX *)
+      (* Generated: shorthand for the function names *)
+      (* XXX if we return [], then if we "redo" a functions
+         expectation, it will delete older expectations. If we first
+         look up the current expectation in the context, we will add
+         on to the current expectations. *)
+      let get_position = `get_position, []
+      and move_forward = `move_forward, []
+      and turn = `turn, []
+      and pen_up = `pen_up, []
+      and pen_down = `pen_down, []
     end
 
   (* Record function invocations *)
   let invoke (ctx : context) (f : funs) (args : args) =
-    (* ctx := { !ctx with invocations = args :: !ctx.invocations } *)
     ctx.invocations <- args :: ctx.invocations
 
   (* Lookup a function's expectations *)
   and lookup (ctx : context) (f : funs) (args : args) = Obj.magic f
 
-  (* Expectations for this mock. (XXX We should move the current
-     things here out of this module, and use the E namespace for the
-     user-facing expectation language.) *)
-  (* module E = struct *)
-  (* end *)
-
   (* Mock implementation of TURTLE, to be used as test double *)
   module M (C:CONTEXT) : TURTLE = struct
-
     (* Include the types from the mock module. We do this so that we
        can access these types from the enclosing module. I'm not sure
        if the types will ultimately equate; there may be a better way
        to do this. *)
     include TurtleTypes
 
-    (* Implement each function. We don't need any shorthand notation
-       for the variant types because this code is going to be
-       generated. We'll save the shorthand notation for the
-       expectation language that the user will see. *)
     let get_position t =
       (* Record invocation *)
-      (* invoke C.ctx `get_position (`get_position t) |> ignore; *)
       invoke C.ctx `get_position (`get_position t);
       (* Lookup expectations *)
       lookup C.ctx `get_position (`get_position t)
@@ -217,21 +208,13 @@ let example () =
   let module E = TurtleMock.E(C) in
   let module Turtle = TurtleMock.M(C) in
 
-  (* let exp = ignore in *)
-  (* let ($) f a = f a in *)
-  (* let (@>) f op = op f in *)
-  (* Create expectations *)
-  (* E.( *)
   (let open E in
     (* XXX Couple problems here: 1) 'occurs never >> will return ...'
        should fail somehow, I'd think. Need to check how it works in
        JMock. 2) turn can only return unit, but here it returns
-       position. THIS is what GADTs are for! 3) We have to ignore
-       these sequences. Can we think of a better way? Maybe a
-       combinator that lets us continue on the next line?*)
-    turn >> occurs never >> will return (`position (4,2)) $
-    get_position >> occurs once >> will return (`position (0,1))
-    |> ignore                   (* Ugly :( *)
+       position. THIS is what GADTs are for! *)
+    turn >> occurs never >> will return (`position (4,2)) |> save;
+    get_position >> occurs once >> will return (`position (0,1)) |> save;
   );
 
   (* Exercise the SUT *)
