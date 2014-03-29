@@ -14,6 +14,14 @@ module type TURTLE =
     val pen_down : t -> unit
   end
 
+(* Because I might want to monadify this... *)
+module type MONAD =
+  sig
+    type 'a t
+    val bind : 'a t -> ('a -> 'b t) -> 'b t
+    val return : 'a -> 'a t
+end;;
+
 (* We might use these later in the generation phase so that we can
    just include them in generated mocks and save some code gen. *)
 (* module MockHelpers = struct end *)
@@ -25,80 +33,167 @@ module TurtleExpectations = struct end
 
 module TurtleMock = struct
 
-  (* The mock's "context" (actual type TBD).  *)
-  type context = {
-    expectations : unit list;
-    invocations  : unit list;
-  }
-
-  let empty_context = { expectations = []; invocations = [] }
-
-  (* Instead of having the context be mutable state that we hide
-     in an enclosing module, we should make the M module be a functor
-     that returns a TURTLE, and which takes a module of type CONTEXT,
-     which will contain just the context. This is like what Xapi's log
-     module did. *)
-  module type CONTEXT = sig val ctx : context end
-
   (* We need to put the mock's types into an extra module so that they
-    can be referred to by both the expectation and mock modules. Is
-    there a better way to do this? *)
+     can be referred to by both the expectation and mock modules. Is
+     there a better way to do this? *)
   module TurtleTypes = struct
     type t
     type direction = Left | Right
     type position = int * int
   end
 
-  (* Expectations for this mock *)
-  module E = struct
-    (* Function names *)
-    type funs = [ `get_position | `move_forward | `turn | `pen_up | `pen_down ]
+  (* Mocked function names *)
+  type funs = [ `get_position | `move_forward | `turn | `pen_up | `pen_down ]
 
-    (* Shorthand for the function names *)
-    let get_position = `get_position
-    and move_forward = `move_forward
-    and turn = `turn
-    and pen_up = `pen_up
-    and pen_down = `pen_down
+  (* XXX can GADTs help us here to simplify these argument types? We
+     could also move these to another module so we can reuse the
+     orignal function names. The functions would have the same
+     parameter types as the original, but we would return these
+     variants instead. *)
+  (* Function argument types *)
+  and args = [ `get_position of TurtleTypes.t
+             | `move_forward of TurtleTypes.t * int
+             | `turn of TurtleTypes.t * TurtleTypes.direction
+             | `pen_up of TurtleTypes.t
+             | `pen_down of TurtleTypes.t ]
 
-    (* XXX can GADTs help us here to simplify these argument types? We
-       could also move these to another module so we can reuse the
-       orignal function names. The functions would have the same
-       parameter types as the original, but we would return these
-       variants instead. *)
-    (* Function argument types *)
-    type args = [ `get_position of TurtleTypes.t
-                | `move_forward of TurtleTypes.t * int
-                | `turn of TurtleTypes.t * TurtleTypes.direction
-                | `pen_up of TurtleTypes.t
-                | `pen_down of TurtleTypes.t ]
+  and rets = [ `get_position of TurtleTypes.position
+             | `move_forward of unit
+             | `turn of unit
+             | `pen_up of unit
+             | `pen_down of unit
+             (* XXX we *definitely* need GADTs! *)
+             | `unit | `position of TurtleTypes.position ]
 
-    (* let invoke_get_position t = `get_position t *)
-    (* and invoke_move_forward t i = `move_forward (t, i) *)
-    (* and invoke_turn t d = `turn (t, d) *)
-    (* and invoke_pen_up t = `pen_up t *)
-    (* and invoke_pen_down t = `pen_down t *)
+  (* Consider monads here, just for bonus points ;) *)
+  module type EXPECTATIONS =
+    sig
+      type t
+      type action
+      type occurance
+      val return : action
+      val raises : action
+      val will : action -> rets -> funs -> funs
+      val once : occurance
+      val never : occurance
+      val at_least : int -> occurance
+      val at_most : int -> occurance
+      val between : int -> int -> occurance
+      val occurs : occurance -> funs -> funs
+      val ($) : funs -> funs -> funs
+      val (>>) : funs -> (funs -> funs) -> funs
+    end
+  module Expectations : EXPECTATIONS =
+    struct
+      (* Here is probably a prime candidate for GADTs. We've basically
+         got dependent types here, where what we return or throw
+         depends on what function the action is being performed. *)
+      type t = Action of action
+             | Occurance of occurance
 
-    (* Lookup a function's expectations and record its invocations *)
-    let invoke (ctx : context) (f : funs) (args : args) = Obj.magic f
-    and lookup (ctx : context) (f : funs) (args : args) = Obj.magic f
-  end
+      and action = Return | Raises
+
+      and occurance = Once | Never | AtMost of int | AtLeast of int
+                      | Between of (int * int)
+
+      let return = Return
+      and raises = Raises
+
+      (* XXX This won't work for throwing exceptions. Need to either
+         have ret also contain exceptions, or have action (Return |
+         Raises) carry it's value and remove ret. *)
+      let will (action : action) (ret : rets) (f : funs) = f (* C.ctx *)
+
+      let once = Once
+      and never = Never
+      and at_most i = AtMost i
+      and at_least i = AtLeast i
+      and between i j = Between (i,j)
+
+      let occurs o f =
+        (* Retrieve f from hashtbl, prepend o to it, and store it *)
+        (* XXX shit, do we not have access to the context now? of
+           course not, because we need these definitions to define the
+           context >:( Looks like the only solution is to pass a pair
+           of f and its expectations along, and then store them at the
+           end. *)
+        f
+
+      (* Combinator-based expectation language. We bind together
+         expectations with (>>), which simply carries the function
+         name over throughout the sequence of expectation creation
+         functions. ($) is used to string together expectations. I
+         can't think of a nicer-looking way to do this... *)
+      let (>>) f op = op f
+      let ($) a b = b
+    end
+
+  (* The mock's "context" (actual type TBD). *)
+  type context = {
+    expectations : (funs, Expectations.t list) Hashtbl.t;   (* TODO: figure out type *)
+    mutable invocations  : args list;
+  }
+
+  let empty_context = { expectations = Hashtbl.create 10; invocations = [] }
+  let make_context () = empty_context
+
+  module type CONTEXT = sig val ctx : context end
+
+  (* Generated content *)
+  module type GENEXPS =
+    sig
+      include EXPECTATIONS
+      (* Generated *)
+      val get_position : funs
+      val move_forward : funs
+      val turn : funs
+      val pen_up : funs
+      val pen_down :funs
+    end
+  module E (C : CONTEXT) : GENEXPS =
+    struct
+      include Expectations
+      (* Shorthand for the function names *)
+      let get_position = `get_position
+      and move_forward = `move_forward
+      and turn = `turn
+      and pen_up = `pen_up
+      and pen_down = `pen_down
+    end
+
+  (* Record function invocations *)
+  let invoke (ctx : context) (f : funs) (args : args) =
+    (* ctx := { !ctx with invocations = args :: !ctx.invocations } *)
+    ctx.invocations <- args :: ctx.invocations
+
+  (* Lookup a function's expectations *)
+  and lookup (ctx : context) (f : funs) (args : args) = Obj.magic f
+
+  (* Expectations for this mock. (XXX We should move the current
+     things here out of this module, and use the E namespace for the
+     user-facing expectation language.) *)
+  (* module E = struct *)
+  (* end *)
 
   (* Mock implementation of TURTLE, to be used as test double *)
   module M (C:CONTEXT) : TURTLE = struct
 
-    (* types are simply duplicated *)
-    (* type t *)
-    (* type direction = Left | Right *)
-    (* type position = int * int *)
+    (* Include the types from the mock module. We do this so that we
+       can access these types from the enclosing module. I'm not sure
+       if the types will ultimately equate; there may be a better way
+       to do this. *)
     include TurtleTypes
 
-    (* Implement each function *)
+    (* Implement each function. We don't need any shorthand notation
+       for the variant types because this code is going to be
+       generated. We'll save the shorthand notation for the
+       expectation language that the user will see. *)
     let get_position t =
       (* Record invocation *)
-      E.invoke C.ctx E.get_position (`get_position t) |> ignore;
+      (* invoke C.ctx `get_position (`get_position t) |> ignore; *)
+      invoke C.ctx `get_position (`get_position t);
       (* Lookup expectations *)
-      E.lookup C.ctx E.get_position (`get_position t)
+      lookup C.ctx `get_position (`get_position t)
 
     (* TBD *)
     let make u = Obj.magic u    (* Fudged this one... *)
@@ -111,12 +206,37 @@ module TurtleMock = struct
 
 end
 
+(* module C = struct let ctx = TurtleMock.make_context () end *)
+(* module E = TurtleMock.E(C) *)
+(* module Turtle = TurtleMock.M(C) *)
+
 (* Using TurtleMock *)
 let example () =
-  let module C = struct let ctx = TurtleMock.empty_context end in
+  (* Create the mock's context, the expectation module, and the mock itself *)
+  let module C = struct let ctx = TurtleMock.make_context () end in
+  let module E = TurtleMock.E(C) in
   let module Turtle = TurtleMock.M(C) in
+
+  (* let exp = ignore in *)
+  (* let ($) f a = f a in *)
+  (* let (@>) f op = op f in *)
+  (* Create expectations *)
+  (* E.( *)
+  (let open E in
+    (* XXX Couple problems here: 1) 'occurs never >> will return ...'
+       should fail somehow, I'd think. Need to check how it works in
+       JMock. 2) turn can only return unit, but here it returns
+       position. THIS is what GADTs are for! 3) We have to ignore
+       these sequences. Can we think of a better way? Maybe a
+       combinator that lets us continue on the next line?*)
+    turn >> occurs never >> will return (`position (4,2)) $
+    get_position >> occurs once >> will return (`position (0,1))
+    |> ignore                   (* Ugly :( *)
+  );
+
+  (* Exercise the SUT *)
   let t = Turtle.make () in
-  ignore (Turtle.get_position t)
+  Turtle.get_position t |> ignore
 
 let main =
   example ();
