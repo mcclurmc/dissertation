@@ -11,3 +11,5 @@ criterion
 hunit
 kaputt
 ounit
+
+application/simplest_mock
