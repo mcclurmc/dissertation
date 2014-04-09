@@ -14,7 +14,7 @@ public class JUnit4TestThatDoesNotSatisfyExpectationsTest {
     private Runnable runnable = context.mock(Runnable.class);
 
     @Test
-    //@Ignore
+    @Ignore
     public void doesNotSatisfyExpectations() {
         context.checking(new Expectations() {{
             oneOf (runnable).run();

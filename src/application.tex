@@ -20,14 +20,42 @@ injecting module dependencies. Complex functionality typically found
 in more mature DI frameworks is not necessary for the rest of this
 work, and we will not describe their implementation here.
 
-\section{Manually-written Mock Modules}
+\lstinputlisting[
+    caption={Example of dependency injection techniques in OCaml},
+    label=code:di,
+    aboveskip=\baselineskip,
+  ] {code/application/depinj.ml}
+
+\section{Design considerations for mock modules}
 \label{application:manual-mock}
 
 Before we can automatically generate a mock module from a given
 interface, we must first describe how to create manually-written
 (hard-coded) mock modules.
 
-\section{Specifying a Mock's expectations}
+\section{The simplest mock module implementation}
+\label{application:simple}
+
+
+Note that this method does not provide any features we would expect
+from a full-featured mocking framework such as JMock. There is no
+automatic generation of the mock implementation. There is no
+expectation language, or even a means to specify expectations. And
+because there is no way to specify expectations, the test case must
+set up the mocked functions manually, and verify the behaviour of the
+SUT manually.
+
+While this is a very simplistic method for creating a mock module, we
+will continually extend this method in the following sections, until
+we have automatically generated mocks with an expression language.
+
+\lstinputlisting[
+caption={Example of dependency injection techniques in OCaml},
+label=code:di,
+aboveskip=\baselineskip,
+] {code/application/simplest_mock.ml}
+
+\section{Specifying a mock's expectations}
 \label{application:expectations}
 
 Much of the Mock Pattern's power comes from having a lightweight
@@ -36,7 +64,118 @@ and implementation of an expectation DSL in OCaml which is similar to
 the JMock expectation DSL described in section
 \ref{testdoubles:mocks}.
 
-\section{Automatically generating Mock Modules}
+Some considerations when implementing expectations. Expectations are
+used for two purposes: 1) to allow the mock implmentation to provide
+the appropriate indirect inputs to the SUT (through the expectation's
+actions), and 2) to provide indirect outputs to the test case from the
+SUT, in the form of invocation counts, as well as values passed to the
+mocked functions.
+
+For expectations, we need to keep track of the expected invocation
+count, and the expected outputs of the function, whether they are
+values or expections. When (and if) we implement individual sequences,
+we need to keep track of which expectations are in which sequence.
+
+While running the test case, the mock implementation needs to keep
+track of the invocations of each function, including the order in
+which they were called, as well as with what arguments they were
+called.
+
+Note: a feature that we'd like to have is expectation pattern
+matching. We'd like to be able to set an expectation that a function
+will be called with some pattern-restricted set of arguments, and then
+either verify that the the function was invoked with arguments that
+match the pattern, or simply inspect the arguements passed to the
+function in the test itself. We might want to implement this feature
+by allowing the user to pass arbitrary funtions which match the type
+of the mocked function to the mock as the mock function itself,
+instead of generating an entire function using just the invocation
+arguments and expected return value.
+
+\subsection{Module organisation}
+
+We will be generating a lot of code when we generate mock
+modules. We'll have to generate an implementation of the to-be-mocked
+interface. We'll have to generate expectation language code which uses
+the same types as defined in the to-be-mocked interface, such that
+the types in the expectation langauge will unify with those in the
+mocked module. We'll have to generate code to verify the expectations
+that have been defined in the test case.
+
+The organisation of generated modules must be chosen carfully,
+especially to satisfy the requirement that types between the
+expectation langauge and the mocked module must unify.
+
+One solution to this is to put logically separate code into separate
+modules, and strategically include modules in ``derivative'' modules
+where necessary. (This is what we have currently done.) Doing this
+allows us to properly namespace the identifiers that we have
+generated, so that we don't have to mangle generated names and then
+redefine them later.
+
+Another solution is to place all generated code into a single module
+that is not exported, but to then create separate modules (say
+\code{E} for the expecation language and \code{M} for the mocked
+module), where each of these modules is restriced by an appropriate
+signature. This should give us the most flexibility: no cumbersome
+module inclusions, while hopefully retaining types that are
+unifiable. Unfortunately, with this solution we will have to mangle
+our generated names and then redefine them later, because we may clash
+with the names in our to-be-mocked interface. We can minimise the
+names we have to mangle by keeping track of the identifiers defined in
+the to-be-mocked module, and only mangling clashing names. On second
+thought, this sounds far too complex; more complex than managing
+multiple modules.
+
+\subsection{Generalised Algebraic Data Types}
+\label{application:gadt}
+
+We make use of Generalised Algebraic Data Types (GADTs) to help us
+encode the arguements for and return values of our expectations. GADTs
+are a relatively new feature in OCaml. They allow \dots (um, explain).
+
+(Also cite Ralf's Phantom Types paper! :) )
+
+\subsection{Verifying expectations}
+
+To verify expectations, we need to compare them to the invocation
+record, and ensure that the invocations satisfy the expecatations. We
+need to ensure:
+
+\begin{enumerate}
+\item All invocation counts are satisfied. This includes insuring that
+  \textit{never} functions are not called, and that number-checked
+  functions are called the correct number of times. We can skip
+  testing for \textit{allowing} functions, since we don't care whether
+  they are called.
+\item Sequenced expectations are invoked in the order
+  specified. (We'll do this later, not as a first feature.)
+\end{enumerate}
+
+To verify expectations, we need to iterate over each invocation, and
+imperatively update the list of expectations accordingly. We search
+for the current invocation in the list of expectations, and increment
+the invocation count. After we've interated through the invocations,
+we have an updated list of expectations that we can then verify
+(short-cut: we update the list of expectations at test-time, instead
+of recording invocations). Now we proceed through the expectations and
+verify that the invocation count satisfies the expectation. Later,
+when we implement sequences, we can also verify that the order of
+invocations is correct.\footnote{Aha! We can simply attach an
+  invocation sequence number to each expectation as we invock a
+  matching function. This will allow us to verify that the
+  expectations in each sequence have a monotonically increasing
+  invocation sequence number.}
+
+We should be sure to proceed through the entire list of expectations,
+and not necessarily short-circuit at the first matching
+expectation. If that first matching expectation has already been
+satisfied, then we will need to proceed to the next potentially
+matching expectation. This means that we will need to perform
+verification at each invocation step, so that we can easily skip
+already-satisifed expectations.
+
+\section{Automatically generating mock modules}
 \label{application:generation}
 
 Mocks are only truly useful as a testing tool when they can be
@@ -45,10 +184,3 @@ OCaml preprocessing tool, a new OCaml feature called \textit{extension
   points} used for AST annotation, and the OCaml compiler's
 \textit{compiler-libs} in order to generate and pretty-print OCaml
 code.
-
-\section{Comparison of mocking frameworks}
-\label{application:comparison}
-
-Compare MoCaml, manual mocking with Kaputt, and JMock. Demonstrate
-pros and cons of each framework. Should this go in the Reflections
-chapter? Probably.

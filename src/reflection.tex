@@ -1,5 +1,21 @@
 \chapter{Reflection}
 \label{reflection}
 
-\section{Reflect}
+\section{Comparison of mocking frameworks}
+\label{application:comparison}
 
+Compare MoCaml, manual mocking with Kaputt, and JMock. Demonstrate
+pros and cons of each framework.
+
+\subsection{Notes}
+
+\begin{enumerate}
+\item JMock can't tell at run-time whether an expecation
+  type-checks. Make sure that we can do this!
+\item \code{oneOf(mock).foo(); oneOf(mock).foo()} means \textbf{two}
+  calls to \code{foo()}, not just one. (Note: this is okay because
+  they occur in sequence. Two allowings with this behaviour would be a
+  problem.)
+\item JMock doesn't allow one to pass in methods or closures to
+  implement mock functions, but we can (and should!) allow this.
+\end{enumerate}
