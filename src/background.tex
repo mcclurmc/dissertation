@@ -267,7 +267,7 @@ pattern. OCaml exceptions have no ``finally'' clause, but this can be
 implemented in a library using first-class
 functions.\footnote{cf. \code{protect} and \code{protectx} in Jane
   Street's Core library:
-  \url{https://ocaml.janestreet.com/ocaml-core/111.03.00/doc/core/#Exn}}
+  \url{https://ocaml.janestreet.com/ocaml-core/111.03.00/doc/core/\#Exn}}
 Exceptions are declared similarly to variant data types.
 
 \begin{lstlisting}
@@ -619,7 +619,7 @@ place of the DOC (see table \ref{table:testdoubles}).
 
 \begin{figure}
   \centering
-  \includegraphics[scale=1.0]{img/indirect_inputs.png}
+  \includegraphics[scale=1.0]{img/indirect_outputs.png}
   \caption[Indirect Outputs]{Indirect outputs from a SUT\footnotemark}
   \label{fig:indirect_outputs}
 \end{figure}
@@ -899,12 +899,14 @@ provides features to aid developers in writing their own hard-coded
 Mock functions, but little more.
 
 \lstinputlisting[
-    caption=Annotated example of Kaputt's mock features\footnotemark,
-    label=code:kaputt-mock,
-    aboveskip=\baselineskip,
+  caption={Annotated example of Kaputt's mock
+    features\protect\footnotemark},
+  label=code:kaputt-mock,
+  aboveskip=\baselineskip,
 ]{code/kaputt_mock.ml}
-\footnotetext{Un-annotated example adapted from Kaputt's
-  manual: \url{http://kaputt.x9c.fr/distrib/kaputt.html#mock-example}}
+
+\footnotetext{Un-annotated example adapted from Kaputt's manual:
+  \url{http://kaputt.x9c.fr/distrib/kaputt.html\#mock-example}}
 
 In the example in listing \ref{code:kaputt-mock}, the call to
 \code{List.map} is actually the SUT, and the function \code{succ} is
@@ -937,7 +939,7 @@ reverse (reverse xs) = xs
 
 We can easily specify these properties in Haskell.
 
-\begin{lstlisting}[code=Haskell]
+\begin{lstlisting}[language=Haskell]
 rev_Unit x =
   reverse [x] == reverse [x]
 
