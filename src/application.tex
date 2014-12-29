@@ -20,11 +20,91 @@ injecting module dependencies. Complex functionality typically found
 in more mature DI frameworks is not necessary for the rest of this
 work, and we will not describe their implementation here.
 
+%% \lstinputlisting[
+%%     caption={Example of dependency injection techniques in OCaml},
+%%     label=code:di,
+%%     aboveskip=\baselineskip,
+%%   ] {code/application/depinj.ml}
+
 \lstinputlisting[
-    caption={Example of dependency injection techniques in OCaml},
-    label=code:di,
+    caption={Example of basic DI techniques in OCaml},
+    label=code:di_basic,
     aboveskip=\baselineskip,
-  ] {code/application/depinj.ml}
+  ] {code/application/depinj_basic_functor.ml}
+
+In listing \ref{code:di_basic} we see a basic DI technique. We
+``lift'' the SUT into a functor which receives the DOC. We can use
+this method to specialize the SUT with either the ``production'' or
+``test'' DOC at compile time.
+
+There are downsides to DI via functorisation, however. In order to
+lift the SUT, we have to do significant refactoring -- especially if
+the module in question is at the top-level of a compilation unit,
+because ml files cannot be functors.
+
+A pattern for lifting a top-level module into a functor is to surround
+the whole file with a new module called \code{Make}: \code{module Make
+  (D : DOC) = struct ...}, and at the end of the file, after we end
+the Make module, add \code{include Make(DOC)}, which will modify this
+module so that it contains both a functor to create a new module, and
+the original contents of the module. If the ml file is restricted by
+an mli file, it may be simpler to just move the functor to a new ml
+file (say, ``SUT\_func.ml''), and have the original ml file contain only
+the line \code{include SUT_func.Make(DOC)}.
+
+\lstinputlisting[
+    caption={Example of DI in OCaml using first-class modules},
+    label=code:di_fcm,
+    aboveskip=\baselineskip,
+] {code/application/depinj_fcm.ml}
+
+Alternatively, instead of using functors, we could use first-class
+modules to perform dependency injection. We have a couple different
+options at our disposal when using first-class modules. Our first
+option is to modify each function in the SUT which depends on the DOC
+so that it receives the DOC as a first-class module. This is shown in
+function \code{g} of listing \ref{code:di_fcm}. We make this an
+optional arguement so that we don't have to modify the callers.
+
+Modifying the parameter list of each of the SUT's functions may not be
+practical. Instead, our second option is to create a first-class
+module reference, which points to the current DOC. The caller of the
+SUT would set this reference before executing the SUT's
+functions. Each function must then be modified to reference the DOC
+through the first-class module.
+
+These two methods using first-class modules are best used when
+modifying existing code for dependency injection, when the SUT being
+modified makes use of the DOC in only a few places. If use of the DOC
+in the SUT is pervasive, full module lifting may be a better option.
+
+\lstinputlisting[
+    caption={Example of a DI ``Factory'' in OCaml},
+    label=code:di_factory,
+    aboveskip=\baselineskip,
+  ] {code/application/depinj_factory.ml}
+
+Another issue with the above first-class module DI technique is that
+it pushes the choice of which DOC to use, either the production module
+or the test module, down into the caller of the SUT. We may prefer to
+make that decision elsewhere, so that neither the SUT nor the SUT's
+callers need to know what DOC is being used.
+
+We can acheive this goal with first-class modules using a ``module
+factory,'' as in listing \ref{code:di_factory}. This is analogous to a
+``factory'' in the object-oriented sense. Client modules would ask
+this factory to create a particular module, and the module factory
+would check whether it should return the production dependency or the
+test dependency, depending on perhaps a command-line flag or some
+configuration file. A major benefit to this method is that it removes
+the need to refactor each of the functions that access the first class
+module, because we can set this module at module initialisation time.
+
+\lstinputlisting[
+    caption={Usage of various DI techniques in OCaml},
+    label=code:di_useage,
+    aboveskip=\baselineskip,
+  ] {code/application/depinj_usage.ml}
 
 \section{Design considerations for mock modules}
 \label{application:manual-mock}
@@ -33,9 +113,8 @@ Before we can automatically generate a mock module from a given
 interface, we must first describe how to create manually-written
 (hard-coded) mock modules.
 
-\section{The simplest mock module implementation}
+\section{An example: the simplest mock module implementation}
 \label{application:simple}
-
 
 Note that this method does not provide any features we would expect
 from a full-featured mocking framework such as JMock. There is no
@@ -47,50 +126,112 @@ SUT manually.
 
 While this is a very simplistic method for creating a mock module, we
 will continually extend this method in the following sections, until
-we have automatically generated mocks with an expression language.
+we have automatically generated mocks with an expression
+language.
+
+Figure \ref{code:mock_real} shows an implementation of a module which
+we will mock throughout the next few sections. This module is called
+\code{Turtle}, and describes a simple drawing program which is meant
+to be reminiscent of the educational programming language
+Logo.\footnote{\url{http://en.wikipedia.org/wiki/Logo_(programming_language)}}
+We will treat the \code{Turtle} module as our DOC which we wish to
+mock.
 
 \lstinputlisting[
-caption={Example of dependency injection techniques in OCaml},
-label=code:di,
+caption={An example module that we wish to mock},
+label=code:mock_real,
 aboveskip=\baselineskip,
-] {code/application/simplest_mock.ml}
+] {code/application/simplest_mock_real.ml}
+
+We see from the \code{TURTLE} signature that the \code{Turtle} module
+implements a simple interface. There are functions to make a new
+turtle, to turn the turtle $90^o$ in either direction, to move the
+turtle forward by a given number of units, and to put the pen up or
+down. When the pen is in the down position, moving the turtle would
+draw to the screen. We have included a simpile combinator operator
+\code{>>} which allows us to easily chain together turtle operations.
+
+Figure \ref{code:mock_usage} shows a short program which demonstrates
+how one might use the \code{Turtle} library.
+
+\lstinputlisting[
+caption={Example usage of the \code{Turtle} library},
+label=code:mock_usage,
+aboveskip=\baselineskip,
+] {code/application/simplest_mock_usage.ml}
+
+Suppose now that we wish to test a function or module which depends
+upon this \code{Turtle} library. We may wish to test that this system,
+say, calls the \code{turn} function a certain number of times. We can
+create a manually mocked implementation of the \code{TURTLE} interface
+which replaces the origina \code{turn} function with one which records
+the number of function invocations, the arguments of the function
+calls, and a pre-set value for the function to return upon
+invocation. Figure \ref{code:mock_partial} shows such an
+implementation of a partial, manual mock of the \code{Turtle} library.
+
+%% Nodes from simplest_mock_partial.ml:
+%%
+%% A partial mock of TURTLE (only mock's turn function). This works by
+%% including the to-be-mocked module in the mock itself, and
+%% reimplementing the functions we want to mock. This won't work if
+%% initialising the to-be-mocked module will have unwanted side
+%% effects.
+
+\lstinputlisting[
+caption={A manually mocked OCaml module},
+label=code:mock_partial,
+aboveskip=\baselineskip,
+] {code/application/simplest_mock_partial.ml}
+
+We can use this partial mock by installing it using any of the
+dependency injection techniques described section
+\ref{application:di}, and then write our test using the newly mocked
+DOC. Manually mocking a module in this way might be an effective way
+to write a test that would otherwise be impossible, but manually
+mocking modules in this manner is tedius and cumbersome. We would much
+prefer a method which allows us to describe the way that we expect the
+depended upon component to behave when it is interacting with the test
+case, and then generate a mock module from that set of expectations.
 
 \section{Specifying a mock's expectations}
 \label{application:expectations}
 
-Much of the Mock Pattern's power comes from having a lightweight
-expectation specification DSL. In this section we describe the design
-and implementation of an expectation DSL in OCaml which is similar to
-the JMock expectation DSL described in section
-\ref{testdoubles:mocks}.
+\textit{Much of the Mock Pattern's power comes from having a
+  lightweight expectation specification DSL. In this section we
+  describe the design and implementation of an expectation DSL in
+  OCaml which is similar to the JMock expectation DSL described in
+  section \ref{testdoubles:mocks}.}
 
-Some considerations when implementing expectations. Expectations are
-used for two purposes: 1) to allow the mock implmentation to provide
-the appropriate indirect inputs to the SUT (through the expectation's
-actions), and 2) to provide indirect outputs to the test case from the
-SUT, in the form of invocation counts, as well as values passed to the
-mocked functions.
+\textit{Some considerations when implementing
+  expectations. Expectations are used for two purposes: 1) to allow
+  the mock implmentation to provide the appropriate indirect inputs to
+  the SUT (through the expectation's actions), and 2) to provide
+  indirect outputs to the test case from the SUT, in the form of
+  invocation counts, as well as values passed to the mocked
+  functions.}
 
-For expectations, we need to keep track of the expected invocation
-count, and the expected outputs of the function, whether they are
-values or expections. When (and if) we implement individual sequences,
-we need to keep track of which expectations are in which sequence.
+\textit{For expectations, we need to keep track of the expected
+  invocation count, and the expected outputs of the function, whether
+  they are values or expections. When (and if) we implement individual
+  sequences, we need to keep track of which expectations are in which
+  sequence.}
 
-While running the test case, the mock implementation needs to keep
-track of the invocations of each function, including the order in
-which they were called, as well as with what arguments they were
-called.
+\textit{While running the test case, the mock implementation needs to
+  keep track of the invocations of each function, including the order
+  in which they were called, as well as with what arguments they were
+  called.}
 
-Note: a feature that we'd like to have is expectation pattern
-matching. We'd like to be able to set an expectation that a function
-will be called with some pattern-restricted set of arguments, and then
-either verify that the the function was invoked with arguments that
-match the pattern, or simply inspect the arguements passed to the
-function in the test itself. We might want to implement this feature
-by allowing the user to pass arbitrary funtions which match the type
-of the mocked function to the mock as the mock function itself,
-instead of generating an entire function using just the invocation
-arguments and expected return value.
+\textit{Note: a feature that we'd like to have is expectation pattern
+  matching. We'd like to be able to set an expectation that a function
+  will be called with some pattern-restricted set of arguments, and
+  then either verify that the the function was invoked with arguments
+  that match the pattern, or simply inspect the arguements passed to
+  the function in the test itself. We might want to implement this
+  feature by allowing the user to pass arbitrary funtions which match
+  the type of the mocked function to the mock as the mock function
+  itself, instead of generating an entire function using just the
+  invocation arguments and expected return value.}
 
 \subsection{Module organisation}
 

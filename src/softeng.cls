@@ -1,4 +1,4 @@
-\LoadClass[a4paper,12pt]{report}
+\LoadClass[12pt]{report}
 
 \newif\if@oxfordlogo@
 \@oxfordlogo@true
@@ -13,7 +13,7 @@
 
 \ProcessOptions
 
-\RequirePackage[margin=1in]{geometry}
+%% \RequirePackage[margin=1in]{geometry}
 \RequirePackage{graphicx}
 \RequirePackage{url}
 

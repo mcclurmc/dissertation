@@ -30,7 +30,7 @@ module New_SUT = SUT_functor(struct let f x = x + 42 end)
 
 (* Downsides to functorisation: We have to do significant refactoring,
 especially if the module in quesiton is at the toplevel of a
-compilation unit, because ml files cannot be functors. A patter for
+compilation unit, because ml files cannot be functors. A pattern for
 "lifting" a toplevel module into a functor is to surround the whole
 file with a new module calld "Make": 'module Make (D : DOC) = struct
 ...', and at the end of the file, after we end the Make module, add
