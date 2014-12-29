@@ -6,7 +6,7 @@ set style data lines
 
 set xdata time
 set timefmt "%Y-%m-%d"
-set xrange ["2014-02-24":"2014-04-06"]
+set xrange ["2014-02-24":"2015-05-01"]
 set yrange [0:20000]
 set y2range [0:80]
 
