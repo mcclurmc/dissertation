@@ -1,0 +1,46 @@
+_MoCaml Thesis: Work remaining_
+
+* Thesis Writing
+** Background
+  - [ ] Unfinished diagrams
+** Application
+  - [X] Clean up dependency injection section
+  - [-] Describe a manual mock
+    - [X] Split up the manual mock listing and write about the
+      individual parts.
+    - [ ] Manual mocks run into the expression problem: It's difficult
+      to change the sut without also changing the mock (is this really
+      the expression problem? do we want to go down that route?)
+  - [ ] Syntax of the mock DSL
+    - Why we need a DSL
+    - Quick example of a Java JMock expectation?
+    - Requirements of the expectation language
+    - Syntax in BNF format? Or just description?
+  - [ ] Implementation of the mock DSL
+    - Overview of the implementation method
+      - Synopsis: three parts to the DSL
+	- expression language
+	- implementation of the mock module which interprets the
+          expression language
+	- automatic mock generation through metaprogramming
+      - Syntax of the DSL
+	- Structure of the expectation type
+	- If we use a GADT, talk about it here
+	  - Expectations are similar to sprintf function? Can use
+            GADTs to create this
+	  - Are they really like sprintf?
+      - Implementation of a "manual mock" using the new type (here?)
+      - Metaprogramming with extension points
+    - [ ] GADT description
+      - Expectations are similar to sprintf function? Can use GADTs to
+        create this
+      - Are they really like sprintf?
+    - [ ] Extension Points description
+** Reflection
+  - [ ] Comparisons? Or is that application section?
+* MoCaml library
+** Where are we?
+  - [ ] Described a manual mock
+  - [ ] DSL for describing mock modules
+  - [ ] Implementation of mocks
+    - [ ] camlp4? extension points?
