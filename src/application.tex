@@ -2,13 +2,16 @@
 \label{application}
 
 We will now discuss the application of the Mock Object pattern to the
-OCaml programming language. In this chapter we will cover dependency
-injection techniques in OCaml, the manual creation of a mock module
-and expectations, a domain specific language for specifying
-expectations in OCaml, and the automatic generation of mock modules
-from a module interface.
+OCaml programming language. In this chapter we will cover some
+preliminary techniques, such as dependency injection in OCaml, and the
+manual creation of a mock module and expectations. We will move on to
+discuss a domain specific language for specifying expectations of a
+mock module, and the automatic generation of mock modules from a
+module interface.
 
-\section{Dependency injection methods in OCaml}
+\section{Preliminary discussion}
+
+\subsection{Dependency injection methods in OCaml}
 \label{application:di}
 
 Dependency injection (DI) techniques in object oriented languages
@@ -106,15 +109,15 @@ module, because we can set this module at module initialisation time.
     aboveskip=\baselineskip,
   ] {code/application/depinj_usage.ml}
 
-\section{Design considerations for mock modules}
-\label{application:manual-mock}
+%% \section{Design considerations for mock modules}
+%% \label{application:manual-mock}
+
+\subsection{An example: the simplest mock module implementation}
+\label{application:simple}
 
 Before we can automatically generate a mock module from a given
 interface, we must first describe how to create manually-written
 (hard-coded) mock modules.
-
-\section{An example: the simplest mock module implementation}
-\label{application:simple}
 
 Note that this method does not provide any features we would expect
 from a full-featured mocking framework such as JMock. There is no
@@ -194,8 +197,25 @@ prefer a method which allows us to describe the way that we expect the
 depended upon component to behave when it is interacting with the test
 case, and then generate a mock module from that set of expectations.
 
-\section{Specifying a mock's expectations}
-\label{application:expectations}
+%\section{Specifying a mock's expectations}
+\section{Implementation of the mocking framework}
+\label{application:implementation}
+
+%% Synopsis
+
+Much of the Mock Pattern's power comes from having a lightweight
+expectation specification language. This language allows users to
+describe their expectations of how the mock module will behave in a
+``natural'' way. Expectations are then ``compiled'' into the
+underlying data type representation. The mock module, while being
+exercised by the system under test, records its interactions and also
+plays back the indirect outputs recorded in the expectations. Finally,
+the expectations are verified by the test framework by checking that
+the recorded interactions with the mocked module match what was
+specified by the user in the expectations.
+
+\subsection{Syntax of the expression language}
+\label{application:syntax}
 
 \textit{Much of the Mock Pattern's power comes from having a
   lightweight expectation specification DSL. In this section we
@@ -233,7 +253,11 @@ case, and then generate a mock module from that set of expectations.
   itself, instead of generating an entire function using just the
   invocation arguments and expected return value.}
 
-\subsection{Module organisation}
+%% \subsection{Implementation of mock module implementing the expression langauge}
+\subsection{Verifying the expression language}
+\label{application:mock_impl}
+
+\subsubsection{Module organisation}
 
 We will be generating a lot of code when we generate mock
 modules. We'll have to generate an implementation of the to-be-mocked
@@ -268,7 +292,7 @@ the to-be-mocked module, and only mangling clashing names. On second
 thought, this sounds far too complex; more complex than managing
 multiple modules.
 
-\subsection{Generalised Algebraic Data Types}
+\subsubsection{Generalised Algebraic Data Types}
 \label{application:gadt}
 
 We make use of Generalised Algebraic Data Types (GADTs) to help us
@@ -277,7 +301,7 @@ are a relatively new feature in OCaml. They allow \dots
 
 % (Also cite Ralf's Phantom Types paper! :) )
 
-\subsection{Verifying expectations}
+\subsubsection{Verifying expectations}
 
 To verify expectations, we need to compare them to the invocation
 record, and ensure that the invocations satisfy the expecatations. We
@@ -316,7 +340,8 @@ matching expectation. This means that we will need to perform
 verification at each invocation step, so that we can easily skip
 already-satisifed expectations.
 
-\section{Automatically generating mock modules}
+\subsection{Automatic generation of a mock module}
+%% \section{Automatically generating mock modules}
 \label{application:generation}
 
 Mocks are only truly useful as a testing tool when they can be
