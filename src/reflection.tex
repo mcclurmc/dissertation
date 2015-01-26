@@ -1,21 +1,244 @@
 \chapter{Reflection}
 \label{reflection}
 
+\section{Reflection on our work}
+
+%% \begin{enumerate}
+%% \item Revisit unit testing and the purpose of mocking (to provide both
+%%   indirect inputs and outputs to a test case, and to verify
+%%   expectations of behavior placed on the mocked module by the test
+%%   writer).
+%% \item Describe the results of our work, the MoCaml library (or
+%%   ppx\_mock?). What have we accomplished? Can this be installed?
+%% \end{enumerate}
+
+In this thesis we have discussed unit testing theory, and described
+it's application to both object oriented and functional programming
+langauges. Specifically, we have investigated the ``mock object''
+pattern, and described how it could be used in the strongly typed,
+functional programming language OCaml. We then showed how the mock
+patter could be implemented in OCaml using its preprocessing and code
+generation facilities.
+
 \section{Comparison of mocking frameworks}
 \label{application:comparison}
 
-Compare MoCaml, manual mocking with Kaputt, and JMock. Demonstrate
-pros and cons of each framework.
+%% Compare MoCaml to: manual mocking with Kaputt, and JMock. Demonstrate
+%% pros and cons of each framework.
 
-\subsection{Notes}
+%% \begin{enumerate}
+%% \item JMock can't tell at run-time whether an expectation
+%%   type-checks. Make sure that we can do this! (We can :) )
+%% \item JMock doesn't allow one to pass in methods or closures to
+%%   implement mock functions, but we can (and should!) allow this.
+%% \item MoCaml and Kaputt both support count (and order? behavior?)
+%%   expectation types. Kaputt requires more work than we would like in
+%%   order to set up a mock.
+%% \end{enumerate}
 
-\begin{enumerate}
-\item JMock can't tell at run-time whether an expecation
-  type-checks. Make sure that we can do this!
-\item \code{oneOf(mock).foo(); oneOf(mock).foo()} means \textbf{two}
-  calls to \code{foo()}, not just one. (Note: this is okay because
-  they occur in sequence. Two allowings with this behaviour would be a
-  problem.)
-\item JMock doesn't allow one to pass in methods or closures to
-  implement mock functions, but we can (and should!) allow this.
-\end{enumerate}
+As shown in Chapter \ref{background}, mocking frameworks exist for
+many object oriented languages, as well as for the OCaml
+language. MoCaml compares very favourably to the Kaputt testing
+framework for OCaml (which provides basic functionality for manually
+implementing mock functions), and it is approaching ``core-feature''
+parity with the likes of JMock, the quintisential mocking framework
+for Java, and the reference implementation of the original Mock Object
+Pattern.
+
+% How is it better than Kaputt? Automatic generation.
+\subsection{Comparison to the Kaputt library for OCaml}
+
+The Kaputt unit testing library for OCaml provides simplistic mock
+building facilities, which assist the test writer in preparing mock
+functions. Mock functions written with the Kaputt library have the
+ability to record function invocations, and to transparently invoke
+the original function. Compared to the MoCaml library implementation
+described in Chapter \ref{application}, the Kaputt library essentially
+provides the ability to write ``function proxies,'' as described in
+section \ref{application:mock_verification}. Other limitations of the
+Kaputt library's mocking facilities include:
+
+\begin{itemize}
+\item No automatic generation of mock functions.
+\item Provides no assistance with dependency-injection of the new mock
+  functions.
+\item Built-in mocking combinators only support functions with up to
+  five arguments, and no optional argument support.
+\item In order to mock functions with more than one argument, one must
+  first manually uncurry the function to be mocked.
+\item Validation of mocks is limited to assertions on inputs, and
+  invocation counts; no order validation is provided.
+\item No expectation language for specifying expectations.
+\end{itemize}
+
+Using the Kaputt library for writing tests with the mock pattern is
+tedious because of the lack of code generation for mock modules and
+functions. The lack of an expectation language for describing
+expectations makes it difficult to describe complex expectations, and
+makes it difficult for future programmers to maintain the test
+cases. MoCaml makes up for all of these limitations with it's
+expectation language and automatic mock module generation
+capabilities.
+
+\subsection{Comparison to the JMock library for Java}
+
+%% How is it similar to JMock? Auto-gen, some expectations, dsl for
+%% expectations.
+
+The JMock library \cite{freeman:evolving} \cite{freeman:growing}
+\cite{www:jmock} is one of the major mocking frameworks for the Java
+language, and was the inspiration for the MoCaml library, and MoCaml
+strives to reach feature parity with JMock. Like JMock, the MoCaml
+library provides mocking facilities for a strongly typed language; it
+can generate mock module implementations from a module type
+specification; there is a light-weight expectation language that can
+be used to define the expecations placed on a mock; and MoCaml
+supports many of the same expectations that JMock supports.
+
+%% How is it lacking compared to JMock? Not as many expectation types,
+%% fewer options for validation, DSL is ``less fluent'' (maybe?),
+%% requires a module type signature (equivalent of a Java interface)
+
+JMock is, however, a much more mature piece of software, and thus has
+features that MoCaml lacks. For instance, JMock supports more
+invocation counting expectations than MoCaml does, such as specifying
+a range of invocations which a method will be called, or allowing a
+method to be called without requiring it. JMock makes use of Java's
+reflection capabilities to generate mock implementations at run time,
+while MoCaml requires a separate compilation step in order to
+statically generate the mock implementation. Because of the
+limitations of the OCaml preprocessor system, MoCaml can only generate
+mock module implementations from a module type signature (roughly
+equivalent to a Java interface), and not from a module's
+implementation, which doesn't have enough type information for the
+preprocessor to operate with. JMock also provides a richer exception
+language, with the capability to define expectations on method
+parameters with logical operators, and even to extend the expectation
+language with new actions. Some of these shortcomings may be resolved
+with more development effort put into MoCaml, while others, such as
+requiring a module type signature and a two-stage compilation
+approach, are limitations imposed by the way in which MoCaml is
+implemented.
+
+\section{Next steps for MoCaml and mock modules for OCaml}
+
+%% \textit{Maybe call this ``Next steps''}
+
+We have covered a lot of ground in this dissertation, but there is
+still more work that can be done, both to the MoCaml library and for
+general work on software testing in functional languages. It is yet to
+be seen whether mocking will become a widely used practice in the
+OCaml community, as neither MoCaml, nor mocking, has (to the author's
+knowledge) been used for unit testing in any large-scale OCaml
+software.
+
+There is no reason that the mock technique needs to be relegated
+solely to the object oriented language community -- truely, the
+technique has much less to do with objects than it does with replacing
+side-effecting code. The greatest benefit of mocking is that it allows
+one to write tests for hard-to-test code; often the reason for code
+being hard-to-test is that it produces side effects. The mocking
+technique is excellent for replacing networking, file IO, and database
+manipulation code, all of which are common to both functional and
+object oriented programming. It would seem that the mocking technique
+would be a welcome addition to a functional programmer's toolkit,
+especially for a language such as OCaml, which encourages, but doesn't
+enforce, the separation of side-effecting from non-side-effecting
+code.
+
+Before the MoCaml library itself will be useful for large-scale
+commercial OCaml code bases, some more work must be done. Most
+importantly, and most unfortunately, the code generation portion of
+the MoCaml library is still incomplete. Further to this deficit, there
+are a number of issues which the author would like to remmedy in the
+current implementation. Namely:
+
+\begin{description}
+
+\item [A module's values may be shadowed by generated values]
+
+  We implement the mock module by generating a large amount of new
+  code, including functions and types, as well as inserting static
+  helper functions. If there is a type or value in the original module
+  which shares the same name as a generated name, the MoCaml generated
+  name will shadow the orignal one (this is a common problem for macro
+  writers). We can prefix these new types and values with some string
+  tag which serves to differentiate MoCaml-generated identifiers from
+  user-defined values, but this is not a total solution. It would be
+  preferable if the implementation did not have the potential for
+  unintentionally shadowing values from the original module.
+
+  %Shadowing of mocked module's values with injected values for
+  %operating the mock. We can fix this, right?
+  
+\item [More expectations]
+
+  We would like to provide invocation counting constructs such as ``at
+  least $n$,'' ``at most $n$,'' and ``between $n$ and $m$''. We would
+  like to be able to specify expectations on function parameters
+  directly, instead of requiring the test-writer to supply a function
+  which does so.
+
+  %% maybe some more actions, or more complex ordering?
+
+\item [More control over expectation validation]
+
+  The current implementation of MoCaml performs some expectation
+  validations inline with test execution, and performs others after
+  the test has completed. We would like to provide more control over
+  this behaviour, perhaps allowing for a list of violations to be
+  presented to the test-writer at the end of the test execution. Also,
+  it could be useful to provide a strictness option over invocation
+  counting. This option would allow test writers to specify whether a
+  set of expectations define exactly the set of invocations required,
+  or provide only a minimal set of required invocations.
+
+\item [Thread safety]
+
+  We use mutable state to keep track of invocations, and in the future
+  we may also keep track of violations, instead of raising exceptions
+  as violations are encountered (see above). Because of this mutable
+  state, MoCaml's implementation is not currently thread safe. It may
+  be significant work to properly verify ordering in the face of
+  threaded execution, so modifying the library to support threaded
+  execution would take much thought.
+
+\item [Nicer syntax for specifying expectations]
+
+  A major issue that must be overcome when generating type-safe mock
+  modules is allowing the user to specify expectations in a type-safe
+  manner, while still providing simple action expectation syntax. The
+  current implementation relies on generated polymorphic variants
+  which carry function implementations and return values for mocked
+  functions. The resulting syntax for specifying action expectations
+  is a bit redundant. We would like to investigate the use of
+  Generalized Algebraic Data Types (GADTs) to provide an approximation
+  of dependent types, which could allow for a more elegant expectation
+  language. This solution may be similar to that of the recent work to
+  replace OCaml's string formatting library with a GADT-based
+  implementation \cite{vaugon:gadt-format}. A potentially simpler
+  method which works outside of the type system may be to use OCaml's
+  preprocessing facilities to rewrite the more elegant expectation
+  language which we desire into the uglier, ``real'' implementation.
+
+%% \item [Publish the MoCaml library]
+
+%%   A well written dissertation is a fine achievement, but it doesn't do
+%%   much to help the professional OCaml programmer write better
+%%   tests. Finishing the MoCaml library and publishing it will do more
+%%   to futher the practice of good software construction than this
+%%   thesis will on its own.
+
+\end{description}
+
+The mock pattern and mocking libraries have done much to further the
+state-of-the-art in software testing for object oriented
+langauges. The mock pattern's ability to remove side effects makes it
+easy to test what once was hard-to-test code. While it may be easier
+to develop a mocking library in languages with run-time reflection
+capabilities, or even dynamically typed languages, it is entirely
+possible to construct a mock-generation framework using just the
+facilities that are provided by the OCaml compiler itself. The mock
+pattern has the potential to help OCaml programmers write more tests,
+and to write them faster than they could before, and that in turn has
+the potential to greatly increase software quality as a whole.

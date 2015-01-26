@@ -5,7 +5,8 @@ MAIN_TEX=main.tex
 
 OUTS=main.pdf proposal.pdf
 
-LATEXMK_OPTS=-f -bibtex -silent -pdf
+# LATEXMK_OPTS=-f -bibtex -silent -pdf
+LATEXMK_OPTS=-f -bibtex -pdf
 
 all: $(OUTS)
 

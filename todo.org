@@ -8,15 +8,15 @@ _MoCaml Thesis: Work remaining_
   - [-] Describe a manual mock
     - [X] Split up the manual mock listing and write about the
       individual parts.
-    - [ ] Manual mocks run into the expression problem: It's difficult
+    - [-] Manual mocks run into the expression problem: It's difficult
       to change the sut without also changing the mock (is this really
       the expression problem? do we want to go down that route?)
-  - [ ] Syntax of the mock DSL
+  - [X] Syntax of the mock DSL
     - Why we need a DSL
     - Quick example of a Java JMock expectation?
     - Requirements of the expectation language
     - Syntax in BNF format? Or just description?
-  - [ ] Implementation of the mock DSL
+  - [-] Implementation of the mock DSL
     - Overview of the implementation method
       - Synopsis: three parts to the DSL
 	- expression language
@@ -25,22 +25,48 @@ _MoCaml Thesis: Work remaining_
 	- automatic mock generation through metaprogramming
       - Syntax of the DSL
 	- Structure of the expectation type
+      - Implementation of the DSL
 	- If we use a GADT, talk about it here
 	  - Expectations are similar to sprintf function? Can use
             GADTs to create this
 	  - Are they really like sprintf?
-      - Implementation of a "manual mock" using the new type (here?)
+      - Verification of expectations
+	- Thoughts on compiling the expectation list:
+	  - build a hashtable (or map) of function calls (actions):
+	    - call count
+	    - return value *or* action (need to update exp type with another action type)
+	  - How do we record expected order?
+	    - Map of "dominators"? Dominators for f are functions that must be called before f
+	  - We can use a map instead of hashtable, since we don't need updates
+	- Thoughts on verifying at the call site:
+	  - order? how can we tell order? is that something for later?
+            should we match full behavior with expectations at each
+            run?
+	  - count: keep track of each function call, in order. Also
+            keep track of (call * count)? or do we add to the list,
+            then re-count each call?
+	- Steps for verifying at the call site:
+	  - [X] Check the fcall count
+	  - [X] Check the fcall order
+	  - [X] Perform fcall action:
+	    - If there is an action expected, perform it (one of ret or fun)
+	    - Else, perform original action
+	- Implementation of a "manual mock" using the new type (here?)
       - Metaprogramming with extension points
-    - [ ] GADT description
+    - [-] GADT description
       - Expectations are similar to sprintf function? Can use GADTs to
         create this
       - Are they really like sprintf?
-    - [ ] Extension Points description
+    - [X] Extension Points description
 ** Reflection
-  - [ ] Comparisons? Or is that application section?
+  - [X] Comparisons? Or is that application section?
+  - [X] Next steps section
+** Editing
+  - [ ] Spelling (make sure it's British English)
+  - [ ] Change references to Camlp4 to describe extension points
+  - [ ] Maybe drop Turtle example, and use Simple module instead?
 * MoCaml library
-** Where are we?
-  - [ ] Described a manual mock
-  - [ ] DSL for describing mock modules
-  - [ ] Implementation of mocks
-    - [ ] camlp4? extension points?
+  - [ ] Code generation
+    - [ ] Gen static functions
+    - [ ] Gen static types
+    - [ ] Record types for functions to mock

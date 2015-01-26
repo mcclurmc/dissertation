@@ -46,14 +46,14 @@ the module in question is at the top-level of a compilation unit,
 because ml files cannot be functors.
 
 A pattern for lifting a top-level module into a functor is to surround
-the whole file with a new module called \code{Make}: \code{module Make
-  (D : DOC) = struct ...}, and at the end of the file, after we end
-the Make module, add \code{include Make(DOC)}, which will modify this
-module so that it contains both a functor to create a new module, and
-the original contents of the module. If the ml file is restricted by
-an mli file, it may be simpler to just move the functor to a new ml
-file (say, ``SUT\_func.ml''), and have the original ml file contain only
-the line \code{include SUT_func.Make(DOC)}.
+the whole file with a new module called \code{Make}:
+\code{module Make (D : DOC) = struct ... }, and at the end of the file,
+after we end the Make module, add \code{include Make(DOC)}, which will
+modify this module so that it contains both a functor to create a new
+module, and the original contents of the module. If the ml file is
+restricted by an mli file, it may be simpler to just move the functor
+to a new ml file (say, ``SUT\_func.ml''), and have the original ml
+file contain only the line \code{include SUT_func.Make(DOC)}.
 
 \lstinputlisting[
     caption={Example of DI in OCaml using first-class modules},
@@ -132,6 +132,8 @@ will continually extend this method in the following sections, until
 we have automatically generated mocks with an expression
 language.
 
+% XXX Do we really need TURTLE? Why don't we just use SIMPLE instead?
+
 Figure \ref{code:mock_real} shows an implementation of a module which
 we will mock throughout the next few sections. This module is called
 \code{Turtle}, and describes a simple drawing program which is meant
@@ -206,147 +208,684 @@ case, and then generate a mock module from that set of expectations.
 Much of the Mock Pattern's power comes from having a lightweight
 expectation specification language. This language allows users to
 describe their expectations of how the mock module will behave in a
-``natural'' way. Expectations are then ``compiled'' into the
-underlying data type representation. The mock module, while being
-exercised by the system under test, records its interactions and also
-plays back the indirect outputs recorded in the expectations. Finally,
-the expectations are verified by the test framework by checking that
-the recorded interactions with the mocked module match what was
-specified by the user in the expectations.
+natural way. Expectations are then compiled into the underlying data
+type representation. The mock module, while being exercised by the
+system under test, records its interactions and also plays back the
+indirect outputs recorded in the expectations. Finally, the
+expectations are verified by the test framework by checking that the
+recorded interactions with the mocked module match what was specified
+by the user in the expectations.
 
-\subsection{Syntax of the expression language}
+In this section we will cover the implementation of a mocking
+framework. We will discuss the syntax and implementation of the
+expectation lanaguage, the verification of a mock's expectations, and
+the automatic generation of a mock module through compile-time
+metaprogramming.
+
+\subsection{Syntax of the expectation language}
 \label{application:syntax}
 
-\textit{Much of the Mock Pattern's power comes from having a
-  lightweight expectation specification DSL. In this section we
-  describe the design and implementation of an expectation DSL in
-  OCaml which is similar to the JMock expectation DSL described in
-  section \ref{testdoubles:mocks}.}
+The expectation language is made up of a small number of operations
+which describe how we expect a mock to behave during a test. These
+functions each return a expectation, which can be strung together into
+a list of all expectations for that mock.
 
-\textit{Some considerations when implementing
-  expectations. Expectations are used for two purposes: 1) to allow
-  the mock implmentation to provide the appropriate indirect inputs to
-  the SUT (through the expectation's actions), and 2) to provide
-  indirect outputs to the test case from the SUT, in the form of
-  invocation counts, as well as values passed to the mocked
-  functions.}
+%% TODO make sure that we're describing the correct syntax (poly vars, etc.)
+\begin{figure}
+  \begin{grammar}
+    <int> :: An integer
 
-\textit{For expectations, we need to keep track of the expected
-  invocation count, and the expected outputs of the function, whether
-  they are values or expections. When (and if) we implement individual
-  sequences, we need to keep track of which expectations are in which
-  sequence.}
+    <value> :: An OCaml value
 
-\textit{While running the test case, the mock implementation needs to
-  keep track of the invocations of each function, including the order
-  in which they were called, as well as with what arguments they were
-  called.}
+    <function> :: An OCaml function
 
-\textit{Note: a feature that we'd like to have is expectation pattern
-  matching. We'd like to be able to set an expectation that a function
-  will be called with some pattern-restricted set of arguments, and
-  then either verify that the the function was invoked with arguments
-  that match the pattern, or simply inspect the arguements passed to
-  the function in the test itself. We might want to implement this
-  feature by allowing the user to pass arbitrary funtions which match
-  the type of the mocked function to the mock as the mock function
-  itself, instead of generating an entire function using just the
-  invocation arguments and expected return value.}
+    <mocked\_function> ::= A function exposed by the mocked module
 
-%% \subsection{Implementation of mock module implementing the expression langauge}
-\subsection{Verifying the expression language}
+    <tag> ::= A polymorphic variant that names a mocked function
+
+    <expect\_op> ::=
+    `one\_of' <mocked\_function>
+    \alt `never' <mocked\_function>
+    \alt `times' <int> <mocked\_function>
+    \alt `before' <mocked\_function> <mocked\_function>
+    \alt <mocked\_function> `>>' <mocked\_function>
+    \alt `will' <mocked\_function> (<tag> <function>)
+    \alt  <mocked\_function> `*>' (<tag> <function>)
+    \alt `returns' <mocked\_function> (<tag> <value>)
+    \alt <mocked\_function> `*->' (<tag> <value>)
+
+    <expectations> ::= `[' <expect\_stmt> ( `;' <expect\_stmt> )* `]'
+  \end{grammar}
+
+  \caption{Grammar of our expectation langauge}
+  \label{code:syntax}
+\end{figure}
+
+In figure \ref{code:syntax} we describe the grammar of our expectation
+language. We have a number of expectation operations (\code{one_of},
+\code{will}, etc.) which allow a test writer to describe a single
+expectation. These expectation operations are grouped together in a
+list of expectations, which will be compiled in a later step (see
+section \ref{application:mock_impl}). The expectation operations are
+explained as follows:
+
+\begin{itemize}
+\item \code{one_of f}: At least one invocation of \code{f} ins
+  expected.
+\item \code{never f}: \code{f} should never be invoked.
+\item \code{times n f}: \code{f} should be invoked exactly $n$
+  times.
+\item \code{before f g}: \code{f} should be invoked at least once
+  before \code{g}.
+\item \code{f >> g}: Shorthand for \code{before}
+\item \code{will f f'}: The mock function \code{f} will behave as
+  instead as function \code{f'}.
+\item \code{f *> f'}: Shorthand for \code{will}
+\item \code{returns f r}: the mock function \code{f} will return the
+  value \code{g}, regardless of its inputs during test execution.
+\item \code{f *-> r}: Shorthand for \code{returns}
+\end{itemize}
+
+%% TODO: use file expect_example.ml, but restrict with firstline/lastline
+\begin{figure}
+\lstinputlisting[
+    caption={Example of expectations list},
+    label=code:expect_example,
+    aboveskip=\baselineskip,
+    numbers=left,
+  ] {code/application/expect_example_expectation_list.ml}
+\end{figure}
+
+Figure \ref{code:expect_example} shows how one might write an
+expectation list. The \code{let e} on line 19 in this listing defines
+a list of expectations which are generated by the function calls in
+the list. For example, \code{one_of add} will generate the expectation
+\code{One_of `add}. The expectation \code{add >> incr} (read as ``add
+then incr'') states that we expect first function \code{add} and then
+function \code{incr} to be executed, in that order, during the test
+case.  \code{incr *> `incr (fun x -> x+2)} (read as ``incr will behave
+as ...'')  states that the \code{incr} function will behave as the
+function \code{fun x -> x+2} during the test case.
+\code{add *-> (`add 42)} (read as ``add returns 42'') states that the
+\code{add} function will always return $42$ during test execution,
+regardless of input.
+
+The reader will note that some of these operations are a bit
+redundant. For instance, in order to specify that the \code{incr}
+function should always return the value 42, we must write
+\code{incr *-> `incr 42}. The name \code{incr} is repeated twice, the
+second time as a polymorphic variant. The reason for this reduncancy
+is that we must be able to write a \code{returns} function that takes
+a function name, and also a variably-typed argument for the return
+value (and similar for the \code{will} operation). If we wish to write
+both, say, \code{f *-> 42} and \code{g *-> "hello world"}, we would
+essentially need to make \code{*->} dependently typed, where the type
+of the second argument to \code{*->} depends on the value of the first
+\cite[Chapter 2]{pierce:atapl}.
+
+There are a few possibilities for resolving this redundancy. We may
+attempt to use OCaml's generalized algebraic data types (GADT) to
+provide a ``light-weight dependent type'' to represent the action
+operations, but formulating this type of GADT is notoriously
+tricky. Instead of pushing the boundaries of the type system to
+provide a nice, generic \code{returns} function, we could instead
+generate a different \code{returns} and \code{will} functions for each
+mocked function (so we would have \code{f_returns}, \code{f_will},
+\code{g_returns}, \code{g_will}, etc. for all mocked functions
+\code{f}, \code{g}, ...). This solution is quite inelegant, as it
+requires generating quite a few redundant-sounding function names. A
+third possible solution is to retreat from the confines on the OCaml
+type system, and to further use OCaml's pre-processing capabilities to
+simply rewrite the natural \code{f *> (fun ...)} to the more
+cumbersome \code{f *> (`f (fun ...))}.\footnote{There exists a fourth
+  solution which would allow test writers to write more elegant
+  expectations, at the expense of distasteful coding style on the part
+  of the libarary writer. OCaml provides the \code{Obj.magic}
+  function, which has the type \code{Obj.magic : a -> b}. (It is akin
+  to Haskell's similarly distasteful \code{unsafeCoerce}.) While
+  this function certainly has its uses, it is generally recommended to
+  avoid its use at all costs.}
+
+%% XXX TODO This subsection on syntax needs work. We need to make sure
+%% that the grammar shows where we have to insert poly variants, and then
+%% explain why those are necessary. Move-up the listing on the generated
+%% types, and explain what they do. Discuss possible options for using
+%% GADTs or other interesting types to represent actions so that we have
+%% a cleaner syntax, and also discuss the possibility of doing AST
+%% rewriting on the expectation definition, generating \code{<fun>_will}
+%% functions specific for each mocked function, or using extension points
+%% for the action definitions, in order to clean up the syntax. Something
+%% like:
+
+%% \begin{lstlisting}[aboveskip=\baselineskip,
+%%   caption=Extension points for cleaner expecation syntax]
+%%   let expectations = [
+%%     [% fun_1 returns 42 %];
+%%     [% fun_2 will (fun x -> ...) %];
+%%     [% one_of fun_3 %]
+%%   ]
+%% \end{lstlisting}
+
+%% XXX This point about indirect inputs is good.
+%% \textit{Some considerations when implementing
+%%   expectations. Expectations are used for two purposes: 1) to allow
+%%   the mock implementation to provide the appropriate indirect inputs to
+%%   the SUT (through the expectation's actions), and 2) to provide
+%%   indirect outputs to the test case from the SUT, in the form of
+%%   invocation counts, as well as values passed to the mocked
+%%   functions.}
+
+\subsection{Implementation of the expectation language}
 \label{application:mock_impl}
 
-\subsubsection{Module organisation}
+%% XXX needs more exposition
 
-We will be generating a lot of code when we generate mock
-modules. We'll have to generate an implementation of the to-be-mocked
-interface. We'll have to generate expectation language code which uses
-the same types as defined in the to-be-mocked interface, such that
-the types in the expectation langauge will unify with those in the
-mocked module. We'll have to generate code to verify the expectations
-that have been defined in the test case.
+The implementation of the mock expectation language follows these
+steps:
 
-The organisation of generated modules must be chosen carfully,
-especially to satisfy the requirement that types between the
-expectation langauge and the mocked module must unify.
+\begin{enumerate}
+\item Generate a mock from a specified module
+\item Describe the expecations
+\item Compile the expectations
+\item Execute the test in the context of the compiled expectations
+\item Verify the expectations
+\end{enumerate}
 
-One solution to this is to put logically separate code into separate
-modules, and strategically include modules in ``derivative'' modules
-where necessary. (This is what we have currently done.) Doing this
-allows us to properly namespace the identifiers that we have
-generated, so that we don't have to mangle generated names and then
-redefine them later.
+In the previous section we covered the second step, describing the
+grammar of the expectation language. The expectation language is meant
+for ease of use by the test writer, as well as for ease of reading,
+for the benefit of any future programmers attempting to understand the
+test case. This list of expectations as written by the test writer is
+not helpful to us when verifying that the mock's expected behavior was
+exibited by the test case. We must now compile the given expectations
+into a format that can be used by the mock framework to verify the
+behavior of the mock.
 
-Another solution is to place all generated code into a single module
-that is not exported, but to then create separate modules (say
-\code{E} for the expecation language and \code{M} for the mocked
-module), where each of these modules is restriced by an appropriate
-signature. This should give us the most flexibility: no cumbersome
-module inclusions, while hopefully retaining types that are
-unifiable. Unfortunately, with this solution we will have to mangle
-our generated names and then redefine them later, because we may clash
-with the names in our to-be-mocked interface. We can minimise the
-names we have to mangle by keeping track of the identifiers defined in
-the to-be-mocked module, and only mangling clashing names. On second
-thought, this sounds far too complex; more complex than managing
-multiple modules.
+Expectations can be grouped into three categories: invocation
+counting, ordering, and actions. Invocation counting expectations set
+bounds on the number of times a particular function may be called
+during a test. Ordering expectations enforce a partial order on
+function invocations. Action expectations state that a particular
+function will behave in a certain way upon invocation, either by
+returning a particular value, or by invoking a completely different,
+test-writer specified, function. The format to which we compile our
+expectations must support the verification of these types of
+behaviours.
 
-\subsubsection{Generalised Algebraic Data Types}
-\label{application:gadt}
+% TODO explain these two listings
 
-We make use of Generalised Algebraic Data Types (GADTs) to help us
-encode the arguements for and return values of our expectations. GADTs
-are a relatively new feature in OCaml. They allow \dots
+\begin{lstlisting}[aboveskip=\baselineskip,
+    caption=Example of types needed for a generated mock module,
+    label=code:simple_mock_types]
+(* Mocked function names *)
+type fname = [ `add | `incr ]
+(* Function types *)
+type ftype =
+  [ `add of (int -> int -> int)
+  | `incr of (int -> int) ]
+(* Function arg types *)
+type farg =
+  [ `add of (int * int)
+  | `incr of int ]
+(* Function return types *)
+type fret =
+  [ `add of int
+  | `incr of int ]
+(* "Action" types (these are *not* generated!) *)
+type fact =
+  [ `f_do of ftype
+  | `f_ret of fret ]
+\end{lstlisting}
+
+\begin{lstlisting}[aboveskip=\baselineskip,
+    caption=The expectation type,
+    label=code:expect_type]
+type exp =
+
+  (* Counting *)
+  | One_of of fname
+  | Never of fname
+  | Times of (int * fname)
+
+  (* Order *)
+  | Before of (fname * fname)
+
+  (* Action *)
+  | Will of (fname * ftype)
+  | Returns of (fname * fret)
+\end{lstlisting}
+
+\subsubsection{Invocation counting expectations}
+
+In order to verify invocation counting expectations, it suffices to
+provide a means for the verification system to query both the actual,
+and expected, invocation counts for a particular function. We can
+provide this functionality by encapsulating (function name, invocation
+count) tuples as an OCaml \code{Set}. As part of the mock generation
+process, we generate a set of polymorphic variants of the same name as
+the functions of the mocked module. During the test execution, we keep
+track of the number of times a function is executed by wrapping it in
+a ``proxy'' function, which updates the execution count of that
+function each time it is called.
+
+\subsubsection{Order expectations}
+
+Order expectations specify a partial order on the execution of
+particular functions. We do wish to burden the test writer by forcing
+him or her to specify a total order on all of the function invocations
+in the test, so we have defined a simple \code{before f g} expectation
+which enforces that \code{f} must be invoked at least once before
+\code{g}.
+
+For instance, say we have a mock with three functions, \code{f},
+\code{g}, and \code{h}. We may expect that \code{f} occurs before
+\code{g}; in this case we do not care where in the execution order
+function \code{h} appears, nor do we care when the excution order is
+\code{f;g;f}, because \code{f} has already occured before \code{g}.
+
+In order to verify an order expectation, we need a way to determine
+whether a function's expected predecessors have been executed prior to
+the given function. To do this, we compile the set of a fuction's
+``dominators'', or those functions which the test writer has stated
+that we should expect to be executed before the given function. During
+execution of the test, we then keep track of execution order of the
+mocked functions. At each function invocation, we verify that the
+given function's dominators have each appeared in the execution order
+prior to this function's invocation.
+
+\subsubsection{Action expectations}
+
+Action expectations are particularly interesting because they serve
+two purposes: 1) to allow the test writer to verify that a function is
+invoked with particular arguments, and 2) to make it possible to test
+hard-to-test code by allowing the test writer to ``mock-out'' the
+behavior of the original function, which may not be possible to
+perform during a test case. So action expectations actually perform
+double duty as expectation verifiers and as test-case facilitators.
+
+%% (XXX how do we verify this? A set of function name and function
+%% actions. The generated proxy for this function will test whether there
+%% exists an action defined for it, and will perform this action in place
+%% of the original function, if the action expectation exists. An action
+%% expectation may choose to throw an \code{Expect_Violation} exception
+%% if it was invoked with incorrect arguments.)
+
+In order to verify an action expectation, we must allow the test
+writer to specify an action that will occur in place of the original
+function during the execution of the test. We allow the test writer to
+specify either a function to replace the mocked function, or a return
+value that will be returned by the mocked function, regardless of the
+arguments with which the mocked function is invoked in the test
+case. We encode action expectations as a variant type of either
+\code{`f_do} (for function actions) or \code{`f_ret}, for return
+actions. (See listing \ref{code:simple_mock_types} for the definition
+of these variants.)
+
+
+%% \subsection{Implementation of mock module implementing the expression langauge}
+%% \subsubsection{Module organisation}
+
+%% We will be generating a lot of code when we generate mock
+%% modules. We'll have to generate an implementation of the to-be-mocked
+%% interface. We'll have to generate expectation language code which uses
+%% the same types as defined in the to-be-mocked interface, such that
+%% the types in the expectation langauge will unify with those in the
+%% mocked module. We'll have to generate code to verify the expectations
+%% that have been defined in the test case.
+
+%% The organisation of generated modules must be chosen carfully,
+%% especially to satisfy the requirement that types between the
+%% expectation langauge and the mocked module must unify.
+
+%% One solution to this is to put logically separate code into separate
+%% modules, and strategically include modules in ``derivative'' modules
+%% where necessary. (This is what we have currently done.) Doing this
+%% allows us to properly namespace the identifiers that we have
+%% generated, so that we don't have to mangle generated names and then
+%% redefine them later.
+
+%% Another solution is to place all generated code into a single module
+%% that is not exported, but to then create separate modules (say
+%% \code{E} for the expecation language and \code{M} for the mocked
+%% module), where each of these modules is restriced by an appropriate
+%% signature. This should give us the most flexibility: no cumbersome
+%% module inclusions, while hopefully retaining types that are
+%% unifiable. Unfortunately, with this solution we will have to mangle
+%% our generated names and then redefine them later, because we may clash
+%% with the names in our to-be-mocked interface. We can minimise the
+%% names we have to mangle by keeping track of the identifiers defined in
+%% the to-be-mocked module, and only mangling clashing names. On second
+%% thought, this sounds far too complex; more complex than managing
+%% multiple modules.
+
+%% \subsubsection{Generalised Algebraic Data Types}
+%% \label{application:gadt}
+
+%% We make use of Generalised Algebraic Data Types (GADTs) to help us
+%% encode the arguements for and return values of our expectations. GADTs
+%% are a relatively new feature in OCaml. They allow \dots
 
 % (Also cite Ralf's Phantom Types paper! :) )
 
-\subsubsection{Verifying expectations}
+\subsection{Verifying a mock's expectations}
+\label{application:mock_verification}
 
-To verify expectations, we need to compare them to the invocation
-record, and ensure that the invocations satisfy the expecatations. We
-need to ensure:
+Now that we have described the compiled form of the expectations, we
+may now describe how the mock framework verifies that the given
+expectations have been satisfied during the execution of the test.
 
-\begin{enumerate}
-\item All invocation counts are satisfied. This includes insuring that
-  \textit{never} functions are not called, and that number-checked
-  functions are called the correct number of times. We can skip
-  testing for \textit{allowing} functions, since we don't care whether
-  they are called.
-\item Sequenced expectations are invoked in the order
-  specified. (We'll do this later, not as a first feature.)
-\end{enumerate}
+Verification of expectations proceeds in two phases. The first phase
+occurs during the actual execution of the test case. Most expectations
+can ``short-circuit,'' and raise an \code{Expect_Violation} exception
+during the test case execution. For instance, if we expect that
+function \code{f} will never be invoked, and at some point in the test
+case that function is invoked, we can immediately raise an error.
 
-To verify expectations, we need to iterate over each invocation, and
-imperatively update the list of expectations accordingly. We search
-for the current invocation in the list of expectations, and increment
-the invocation count. After we've interated through the invocations,
-we have an updated list of expectations that we can then verify
-(short-cut: we update the list of expectations at test-time, instead
-of recording invocations). Now we proceed through the expectations and
-verify that the invocation count satisfies the expectation. Later,
-when we implement sequences, we can also verify that the order of
-invocations is correct.\footnote{Aha! We can simply attach an
-  invocation sequence number to each expectation as we invock a
-  matching function. This will allow us to verify that the
-  expectations in each sequence have a monotonically increasing
-  invocation sequence number.}
+On the other hand, some expectations must wait until the end of the
+test case to be verified. For example, consider the \code{never f}
+expectation earlier. What if function \code{f} is never invoked? We
+need to tell the test framework that the test is over in order to make
+the ultimate decision about whether all the expectations have been
+met. Consider also an expectation of \code{one_of g}, where we expect
+function \code{g} to be invoked at least once during testing. If the
+test case never invokes \code{g}, then the mock framework won't be
+able to verify whether this expectation has been met until it knows
+that the test case has finished. In order to tell the mock framework
+that the test is over, the test writer must execute the mock's
+\code{verify} function, which re-verifies all of the compiled
+expectations, and raises an \code{Expect_Violation} exception if any
+have not been satisfied. This is the second phase of expectation
+verification.
 
-We should be sure to proceed through the entire list of expectations,
-and not necessarily short-circuit at the first matching
-expectation. If that first matching expectation has already been
-satisfied, then we will need to proceed to the next potentially
-matching expectation. This means that we will need to perform
-verification at each invocation step, so that we can easily skip
-already-satisifed expectations.
+For the mock framework to be able to verify expectations at all, it
+must know when and how each of the mocked functions are invoked. To
+that end, we wrap each of the mocked functions in a ``proxy''
+function, which records information about the invocation, performs any
+possible first-phase verifications, and then performs the appropriate
+action: either execute the original function, return the expected
+value, or execute the expected function.
+
+\begin{lstlisting}[aboveskip=\baselineskip,
+    caption=A proxy for a mocked function,
+    numbers=left,
+    label=code:simple_mock_add_proxy]
+let add_proxy m a b =
+  (* Record this function invocation *)
+  m.fcalls <- m.fcalls @ [`add, `add (a, b)];
+  if ExpectMap.mem `add m.expects
+  then
+    let ncalls = List.(filter
+                         (fun (f,_) -> f = `add)
+                         m.fcalls
+                       |> length) in
+    let e = ExpectMap.find `add m.expects in
+
+    (* Test for a violated exact count expectation *)
+    (match e.count with
+    | Some (Exactly count) ->
+       if ncalls > count
+       then raise (Expect_violation
+                     (`add (a, b),
+                      Count_violation ((Exactly count), ncalls)));
+    | _ -> ());
+
+    (* Test for a violated order expectation *)
+    FSet.iter
+      (fun d ->
+       if not (List.exists (fun (f,_) -> f = d) m.fcalls)
+       then raise (Expect_violation (`add (a, b), Order_violation d)))
+      e.dominators;
+
+    (* Perform any actions *)
+    match e.action with
+    | Some (`f_do f)  -> (match f with
+                          | `add f' -> f' a b
+                          | _ -> failwith "Impossible")
+    | Some (`f_ret x) -> (match x with
+                          | `add x' -> x'
+                          | _ -> failwith "Impossible")
+    | None -> Simple.add a b
+  else Simple.add a b
+\end{lstlisting}
+
+We will now discuss the process of verifying each type of expectation.
+
+\subsubsection{Verifying invocation count expectations}
+
+Verification of an expectations invocation count is trivial. We simply
+need to ensure that any exact count expecations are not exceeded at
+the point of the mock function invocation. For any ``at most'' or ``at
+least'' count expectations, we must wait until the second phase before
+we can verify. In this phase, we simply iterate over all of the
+invocation count expectations, and ensure that the actual invocation
+count satisfies these expectations.
+
+\subsubsection{Verifying order expectations}
+
+Order expectations are likewise straight forward. The best time at
+which to verify order violations is in the first phase, during the
+initial test execution. Listing \ref{code:simple_mock_add_proxy},
+starting on line 21, demonstrates how this is achieved. We retrieve
+the set of dominators of the most recently invoked function, and we
+test that each of these dominators appears in the list of previous
+function invocations. We could still perform this verification in the
+second phase of verification, if we desire. In that case, we would
+instead iterate over the prefixes of the function invocation list, and
+verify the dominators of each of the last function to be invoked in
+the current prefix list.
+
+\subsubsection{Verifying action expectations}
+
+Action expectations are similarly verified in the first phase. Action
+expectations which only specify a return value are not necessary to be
+verified, because their sole purpose is to provide indirect inputs to
+the test case. Action expectations which provide an alternative
+function definition for the mocked function are in fact
+self-verifying. The test writer may choose to raise an
+\code{Expect_violation} exception upon receiving invalid input. This
+is equivalent to the JMock library's ability to set expectations on
+function arguments, but it instead takes advantage of OCaml's anonymous
+functions and pattern matching. Listing \ref{code:verify_action}
+demonstrates this capability with an expectation which raises an error
+when \code{incr} is called with values $2$ or $3$.
+
+\begin{lstlisting}[aboveskip=\baselineskip,
+    caption=An action expectation example,
+    label=code:verify_action]
+let expectations = [
+  will `incr (function
+              | 2
+              | 3 -> raise (Expect_violation
+                            (Violation_msg
+                             "2 and 3 are terrible numbers...")))
+  ]
+\end{lstlisting}
+
+%% To verify expectations, we need to compare them to the invocation
+%% record, and ensure that the invocations satisfy the expecatations. We
+%% need to ensure:
+
+%% \begin{enumerate}
+%% \item All invocation counts are satisfied. This includes insuring that
+%%   \textit{never} functions are not called, and that number-checked
+%%   functions are called the correct number of times. We can skip
+%%   testing for \textit{allowing} functions, since we don't care whether
+%%   they are called.
+%% \item Sequenced expectations are invoked in the order
+%%   specified. (We'll do this later, not as a first feature.)
+%% \end{enumerate}
+
+%% To verify expectations, we need to iterate over each invocation, and
+%% imperatively update the list of expectations accordingly. We search
+%% for the current invocation in the list of expectations, and increment
+%% the invocation count. After we've interated through the invocations,
+%% we have an updated list of expectations that we can then verify
+%% (short-cut: we update the list of expectations at test-time, instead
+%% of recording invocations). Now we proceed through the expectations and
+%% verify that the invocation count satisfies the expectation. Later,
+%% when we implement sequences, we can also verify that the order of
+%% invocations is correct.\footnote{Aha! We can simply attach an
+%%   invocation sequence number to each expectation as we invock a
+%%   matching function. This will allow us to verify that the
+%%   expectations in each sequence have a monotonically increasing
+%%   invocation sequence number.}
+
+%% We should be sure to proceed through the entire list of expectations,
+%% and not necessarily short-circuit at the first matching
+%% expectation. If that first matching expectation has already been
+%% satisfied, then we will need to proceed to the next potentially
+%% matching expectation. This means that we will need to perform
+%% verification at each invocation step, so that we can easily skip
+%% already-satisifed expectations.
 
 \subsection{Automatic generation of a mock module}
-%% \section{Automatically generating mock modules}
 \label{application:generation}
 
 Mocks are only truly useful as a testing tool when they can be
-automatically generated from an interface. We will use Camlp4, an
-OCaml preprocessing tool, a new OCaml feature called \textit{extension
-  points} used for AST annotation, and the OCaml compiler's
-\textit{compiler-libs} in order to generate and pretty-print OCaml
-code.
+automatically generated. We will use a new feature of the OCaml 4.02
+compiler called ``extension points.'' \cite{ocaml:spec}. Extention
+points are a replacement for OCaml's previous pre-processing tool
+called Camlp4. Extension points provide a means for manipulating the
+abstract syntax tree (AST) of a program before compilation is
+finished. They are similar to Lisp's macro system, except that they
+are much more low-level, in that there is no antiquotation system, and
+programmers must directly manipulate the compiler's view of the AST
+during the compilation of the program. In addition to providing a
+means to manipulate the AST of a program directly, extension points
+also provide a way to annotate source code. Annotations essentially
+add non-semantic nodes to the AST, which the compiler will ignore. A
+extention, however, can use this extra AST node however it wishes.
+
+We will make use of these extension points when generating mock
+modules.
+
+%% \begin{lstlisting}[aboveskip=\baselineskip,
+%%     caption=Example of using the \code{mock} annotation,
+%%     label=code:mock_annotation]
+%%   (* Some module that we wish to mock *)
+%%   module DOC = struct ... end
+
+%%   (* We must extract the signature of the module *)
+%%   module type DOC_S = module type of DOC
+
+%%   (* Use an annotation to tell the MoCaml extension to
+%%      generate a mock for the DOC_S interface. *)
+%%   module DOC_mock = [% mock DOC_S %]
+%% \end{lstlisting}
+
+%% \textit{XXX show a dumped parse tree of an interface want to mock?}
+
+\begin{lstlisting}[aboveskip=\baselineskip,
+    caption={An annotated module, from which a mock module will be generated},
+    label=code:simple_annotated]
+module type SIMPLE_S =
+  sig
+    val add  : int -> int -> int
+    val incr : int -> int
+  end [@mock]
+\end{lstlisting}
+
+Listing \ref{code:simple_annotated} shows a module which we have
+worked with previously, which has been given the \code{[@mock]}
+annotation. Our mock-generating extension uses this annotation to
+decide for which module signatures to generate mock module
+implementations.
+
+A limitation of using extension points is that we only have the
+current abstract syntax tree to work with. Because all extensions are
+run before type checking occurs, we do not have the benefit of the
+OCaml type checker when generating our mock modules. This means that
+while we would like to be able to annotate a module implementation, or
+to recover the signature of an existing module and generate a mock
+from that, we do not have enough type information at this stage to
+generate a well typed mock module.\footnote{As we noted previously,
+  the function \code{Obj.magic} would allow us to ``fake'' the
+  appropriate types to mock a module implementation, without relying
+  on a module type signature. This would allow us to generate a mock
+  module containing functions with the same arity as the original
+  implementation, but which would have fully polymorphic type
+  signatures. This type of mock implementation would be dangerous, as
+  it would rely on the test writer to provide correctly-typed values
+  to the action expecations. We would prefer to restrict the mock
+  framework to generating mocks for fully specified module signatures,
+  rather than take the risk of lying to the type system.}
+
+Listing \ref{code:simple_annotated_ast} shows the AST fragment
+produced by the module type signature and annotation from listing
+\ref{code:simple_annotated}. Without careful study of the OCaml
+compiler internals this AST fragment is quite meaningless, but it
+serves to show that from the above module type and annotation we can
+glean the type of each value declared in the orignal signature, which
+is enough to generate a mock implementation of this signature.
+
+\begin{figure}
+\begin{lstlisting}[aboveskip=\baselineskip,
+    caption={The AST node produced by \ref{code:simple_annotated}},
+    %% numbers=left,
+    label=code:simple_annotated_ast]
+[{pstr_desc =
+   Pstr_modtype
+    {pmtd_name = {txt = "SIMPLE_S"};
+     pmtd_type =
+      Some
+       {pmty_desc =
+         Pmty_signature
+          [{psig_desc =
+             Psig_value
+              {pval_name = {txt = "add"};
+               pval_type =
+                {ptyp_desc =
+                  Ptyp_arrow ("",
+                   {ptyp_desc = Ptyp_constr ({txt = Lident "int"}, [])},
+                   {ptyp_desc =
+                     Ptyp_arrow ("",
+                      {ptyp_desc = Ptyp_constr ({txt = Lident "int"}, [])},
+                      {ptyp_desc = Ptyp_constr ({txt = Lident "int"}, [])})})};
+               pval_prim = []}};
+           {psig_desc =
+             Psig_value
+              {pval_name = {txt = "incr"};
+               pval_type =
+                {ptyp_desc =
+                  Ptyp_arrow ("",
+                   {ptyp_desc = Ptyp_constr ({txt = Lident "int"}, [])},
+                   {ptyp_desc = Ptyp_constr ({txt = Lident "int"}, [])})};
+               pval_prim = []}}];
+        pmty_attributes = [({txt = "mock"}, PStr [])]}}};
+\end{lstlisting}
+\end{figure}
+
+\begin{figure}
+\begin{lstlisting}[aboveskip=\baselineskip,
+    caption={Elegant, but invalid, methods of specifying mock module},
+    label=code:simple_annotated_bad]
+(* 'Simple' module does not have any type inforamtion, so
+   there is nothing to work with when generating a mock. *)
+module Simple = struct
+  let add a b = a + b ;;
+  let incr a = a + 1;;
+end [@mock]
+
+(* We still have no type information, so this extension is
+   not useful to us either. *)
+module SimpleMock_struct = [%mock Simple]
+
+(* Simlarly, a recovered signature is represented in the AST
+   as just an identifier that points to the original module
+   -- there is no type information available to us. *)
+module type SIMPLE = module type of Simple
+module SimpleMock_recovered_sig = [%mock SIMPLE]
+\end{lstlisting}
+\end{figure}
+
+By writing a pre-processor extension which extracts the type
+signatures of each of the values of a given module, we can generate
+all of the machinery necessary to implement a mock module. This
+includes a new module; with nested \code{Mock} and \code{Expect} inner
+modules; the type and value definitions required to represent the
+values declared in the original interface; the function proxies which
+record function invocations and perform verifications; and the
+expectation and mock datatypes, which represent the defined and
+compiled expectations. The generated mock module also includes
+non-generated functions and types, such as the \code{compile} and
+\code{verify} functions, which compile and verify expecations.
