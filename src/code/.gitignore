@@ -6,6 +6,7 @@
 *.hi
 *.cache
 *.byte
+*.opt
 
 criterion
 hunit
