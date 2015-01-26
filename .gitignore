@@ -1,2 +1,6 @@
 wordcount.png
 wordpage.png
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
