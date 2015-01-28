@@ -37,7 +37,7 @@ work, and we will not describe their implementation here.
 
 In listing \ref{code:di_basic} we see a basic DI technique. We
 ``lift'' the SUT into a functor which receives the DOC. We can use
-this method to specialize the SUT with either the ``production'' or
+this method to specialise the SUT with either the ``production'' or
 ``test'' DOC at compile time.
 
 There are downsides to DI via functorisation, however. In order to
@@ -67,7 +67,7 @@ options at our disposal when using first-class modules. Our first
 option is to modify each function in the SUT which depends on the DOC
 so that it receives the DOC as a first-class module. This is shown in
 function \code{g} of listing \ref{code:di_fcm}. We make this an
-optional arguement so that we don't have to modify the callers.
+optional argument so that we don't have to modify the callers.
 
 Modifying the parameter list of each of the SUT's functions may not be
 practical. Instead, our second option is to create a first-class
@@ -93,7 +93,7 @@ or the test module, down into the caller of the SUT. We may prefer to
 make that decision elsewhere, so that neither the SUT nor the SUT's
 callers need to know what DOC is being used.
 
-We can acheive this goal with first-class modules using a ``module
+We can achieve this goal with first-class modules using a ``module
 factory,'' as in listing \ref{code:di_factory}. This is analogous to a
 ``factory'' in the object-oriented sense. Client modules would ask
 this factory to create a particular module, and the module factory
@@ -153,7 +153,7 @@ implements a simple interface. There are functions to make a new
 turtle, to turn the turtle $90^o$ in either direction, to move the
 turtle forward by a given number of units, and to put the pen up or
 down. When the pen is in the down position, moving the turtle would
-draw to the screen. We have included a simpile combinator operator
+draw to the screen. We have included a simple combinator operator
 \code{>>} which allows us to easily chain together turtle operations.
 
 Figure \ref{code:mock_usage} shows a short program which demonstrates
@@ -169,7 +169,7 @@ Suppose now that we wish to test a function or module which depends
 upon this \code{Turtle} library. We may wish to test that this system,
 say, calls the \code{turn} function a certain number of times. We can
 create a manually mocked implementation of the \code{TURTLE} interface
-which replaces the origina \code{turn} function with one which records
+which replaces the original \code{turn} function with one which records
 the number of function invocations, the arguments of the function
 calls, and a pre-set value for the function to return upon
 invocation. Figure \ref{code:mock_partial} shows such an
@@ -194,7 +194,7 @@ dependency injection techniques described section
 \ref{application:di}, and then write our test using the newly mocked
 DOC. Manually mocking a module in this way might be an effective way
 to write a test that would otherwise be impossible, but manually
-mocking modules in this manner is tedius and cumbersome. We would much
+mocking modules in this manner is tedious and cumbersome. We would much
 prefer a method which allows us to describe the way that we expect the
 depended upon component to behave when it is interacting with the test
 case, and then generate a mock module from that set of expectations.
@@ -218,9 +218,9 @@ by the user in the expectations.
 
 In this section we will cover the implementation of a mocking
 framework. We will discuss the syntax and implementation of the
-expectation lanaguage, the verification of a mock's expectations, and
+expectation language, the verification of a mock's expectations, and
 the automatic generation of a mock module through compile-time
-metaprogramming.
+meta-programming.
 
 \subsection{Syntax of the expectation language}
 \label{application:syntax}
@@ -257,7 +257,7 @@ a list of all expectations for that mock.
     <expectations> ::= `[' <expect\_stmt> ( `;' <expect\_stmt> )* `]'
   \end{grammar}
 
-  \caption{Grammar of our expectation langauge}
+  \caption{Grammar of our expectation language}
   \label{code:syntax}
 \end{figure}
 
@@ -314,7 +314,7 @@ The reader will note that some of these operations are a bit
 redundant. For instance, in order to specify that the \code{incr}
 function should always return the value 42, we must write
 \code{incr *-> `incr 42}. The name \code{incr} is repeated twice, the
-second time as a polymorphic variant. The reason for this reduncancy
+second time as a polymorphic variant. The reason for this redundancy
 is that we must be able to write a \code{returns} function that takes
 a function name, and also a variably-typed argument for the return
 value (and similar for the \code{will} operation). If we wish to write
@@ -324,7 +324,7 @@ of the second argument to \code{*->} depends on the value of the first
 \cite[Chapter 2]{pierce:atapl}.
 
 There are a few possibilities for resolving this redundancy. We may
-attempt to use OCaml's generalized algebraic data types (GADT) to
+attempt to use OCaml's generalised algebraic data types (GADT) to
 provide a ``light-weight dependent type'' to represent the action
 operations, but formulating this type of GADT is notoriously
 tricky. Instead of pushing the boundaries of the type system to
@@ -340,7 +340,7 @@ simply rewrite the natural \code{f *> (fun ...)} to the more
 cumbersome \code{f *> (`f (fun ...))}.\footnote{There exists a fourth
   solution which would allow test writers to write more elegant
   expectations, at the expense of distasteful coding style on the part
-  of the libarary writer. OCaml provides the \code{Obj.magic}
+  of the library writer. OCaml provides the \code{Obj.magic}
   function, which has the type \code{Obj.magic : a -> b}. (It is akin
   to Haskell's similarly distasteful \code{unsafeCoerce}.) While
   this function certainly has its uses, it is generally recommended to
@@ -385,7 +385,7 @@ steps:
 
 \begin{enumerate}
 \item Generate a mock from a specified module
-\item Describe the expecations
+\item Describe the expectations
 \item Compile the expectations
 \item Execute the test in the context of the compiled expectations
 \item Verify the expectations
@@ -396,10 +396,10 @@ grammar of the expectation language. The expectation language is meant
 for ease of use by the test writer, as well as for ease of reading,
 for the benefit of any future programmers attempting to understand the
 test case. This list of expectations as written by the test writer is
-not helpful to us when verifying that the mock's expected behavior was
-exibited by the test case. We must now compile the given expectations
+not helpful to us when verifying that the mock's expected behaviour was
+exhibited by the test case. We must now compile the given expectations
 into a format that can be used by the mock framework to verify the
-behavior of the mock.
+behaviour of the mock.
 
 Expectations can be grouped into three categories: invocation
 counting, ordering, and actions. Invocation counting expectations set
@@ -480,12 +480,12 @@ which enforces that \code{f} must be invoked at least once before
 For instance, say we have a mock with three functions, \code{f},
 \code{g}, and \code{h}. We may expect that \code{f} occurs before
 \code{g}; in this case we do not care where in the execution order
-function \code{h} appears, nor do we care when the excution order is
-\code{f;g;f}, because \code{f} has already occured before \code{g}.
+function \code{h} appears, nor do we care when the execution order is
+\code{f;g;f}, because \code{f} has already occurred before \code{g}.
 
 In order to verify an order expectation, we need a way to determine
 whether a function's expected predecessors have been executed prior to
-the given function. To do this, we compile the set of a fuction's
+the given function. To do this, we compile the set of a function's
 ``dominators'', or those functions which the test writer has stated
 that we should expect to be executed before the given function. During
 execution of the test, we then keep track of execution order of the
@@ -499,7 +499,7 @@ Action expectations are particularly interesting because they serve
 two purposes: 1) to allow the test writer to verify that a function is
 invoked with particular arguments, and 2) to make it possible to test
 hard-to-test code by allowing the test writer to ``mock-out'' the
-behavior of the original function, which may not be possible to
+behaviour of the original function, which may not be possible to
 perform during a test case. So action expectations actually perform
 double duty as expectation verifiers and as test-case facilitators.
 
@@ -743,18 +743,18 @@ let expectations = [
 
 Mocks are only truly useful as a testing tool when they can be
 automatically generated. We will use a new feature of the OCaml 4.02
-compiler called ``extension points.'' \cite{ocaml:spec}. Extention
+compiler called ``extension points.'' \cite{ocaml:spec}. Extension
 points are a replacement for OCaml's previous pre-processing tool
 called Camlp4. Extension points provide a means for manipulating the
 abstract syntax tree (AST) of a program before compilation is
 finished. They are similar to Lisp's macro system, except that they
-are much more low-level, in that there is no antiquotation system, and
+are much more low-level, in that there is no anti-quotation system, and
 programmers must directly manipulate the compiler's view of the AST
 during the compilation of the program. In addition to providing a
 means to manipulate the AST of a program directly, extension points
 also provide a way to annotate source code. Annotations essentially
 add non-semantic nodes to the AST, which the compiler will ignore. A
-extention, however, can use this extra AST node however it wishes.
+extension, however, can use this extra AST node however it wishes.
 
 We will make use of these extension points when generating mock
 modules.
@@ -815,7 +815,7 @@ produced by the module type signature and annotation from listing
 \ref{code:simple_annotated}. Without careful study of the OCaml
 compiler internals this AST fragment is quite meaningless, but it
 serves to show that from the above module type and annotation we can
-glean the type of each value declared in the orignal signature, which
+glean the type of each value declared in the original signature, which
 is enough to generate a mock implementation of this signature.
 
 \begin{figure}
@@ -859,7 +859,7 @@ is enough to generate a mock implementation of this signature.
 \begin{lstlisting}[aboveskip=\baselineskip,
     caption={Elegant, but invalid, methods of specifying mock module},
     label=code:simple_annotated_bad]
-(* 'Simple' module does not have any type inforamtion, so
+(* 'Simple' module does not have any type information, so
    there is nothing to work with when generating a mock. *)
 module Simple = struct
   let add a b = a + b ;;
@@ -870,7 +870,7 @@ end [@mock]
    not useful to us either. *)
 module SimpleMock_struct = [%mock Simple]
 
-(* Simlarly, a recovered signature is represented in the AST
+(* Similarly, a recovered signature is represented in the AST
    as just an identifier that points to the original module
    -- there is no type information available to us. *)
 module type SIMPLE = module type of Simple
@@ -885,7 +885,7 @@ includes a new module; with nested \code{Mock} and \code{Expect} inner
 modules; the type and value definitions required to represent the
 values declared in the original interface; the function proxies which
 record function invocations and perform verifications; and the
-expectation and mock datatypes, which represent the defined and
+expectation and mock data types, which represent the defined and
 compiled expectations. The generated mock module also includes
 non-generated functions and types, such as the \code{compile} and
 \code{verify} functions, which compile and verify expecations.

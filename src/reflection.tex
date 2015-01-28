@@ -14,7 +14,7 @@
 
 In this thesis we have discussed unit testing theory, and described
 it's application to both object oriented and functional programming
-langauges. Specifically, we have investigated the ``mock object''
+languages. Specifically, we have investigated the ``mock object''
 pattern, and described how it could be used in the strongly typed,
 functional programming language OCaml. We then showed how the mock
 patter could be implemented in OCaml using its preprocessing and code
@@ -41,7 +41,7 @@ many object oriented languages, as well as for the OCaml
 language. MoCaml compares very favourably to the Kaputt testing
 framework for OCaml (which provides basic functionality for manually
 implementing mock functions), and it is approaching ``core-feature''
-parity with the likes of JMock, the quintisential mocking framework
+parity with the likes of JMock, the quintessential mocking framework
 for Java, and the reference implementation of the original Mock Object
 Pattern.
 
@@ -92,7 +92,7 @@ strives to reach feature parity with JMock. Like JMock, the MoCaml
 library provides mocking facilities for a strongly typed language; it
 can generate mock module implementations from a module type
 specification; there is a light-weight expectation language that can
-be used to define the expecations placed on a mock; and MoCaml
+be used to define the expectations placed on a mock; and MoCaml
 supports many of the same expectations that JMock supports.
 
 %% How is it lacking compared to JMock? Not as many expectation types,
@@ -133,7 +133,7 @@ knowledge) been used for unit testing in any large-scale OCaml
 software.
 
 There is no reason that the mock technique needs to be relegated
-solely to the object oriented language community -- truely, the
+solely to the object oriented language community -- truly, the
 technique has much less to do with objects than it does with replacing
 side-effecting code. The greatest benefit of mocking is that it allows
 one to write tests for hard-to-test code; often the reason for code
@@ -150,7 +150,7 @@ Before the MoCaml library itself will be useful for large-scale
 commercial OCaml code bases, some more work must be done. Most
 importantly, and most unfortunately, the code generation portion of
 the MoCaml library is still incomplete. Further to this deficit, there
-are a number of issues which the author would like to remmedy in the
+are a number of issues which the author would like to remedy in the
 current implementation. Namely:
 
 \begin{description}
@@ -161,7 +161,7 @@ current implementation. Namely:
   code, including functions and types, as well as inserting static
   helper functions. If there is a type or value in the original module
   which shares the same name as a generated name, the MoCaml generated
-  name will shadow the orignal one (this is a common problem for macro
+  name will shadow the original one (this is a common problem for macro
   writers). We can prefix these new types and values with some string
   tag which serves to differentiate MoCaml-generated identifiers from
   user-defined values, but this is not a total solution. It would be
@@ -212,7 +212,7 @@ current implementation. Namely:
   which carry function implementations and return values for mocked
   functions. The resulting syntax for specifying action expectations
   is a bit redundant. We would like to investigate the use of
-  Generalized Algebraic Data Types (GADTs) to provide an approximation
+  Generalised Algebraic Data Types (GADTs) to provide an approximation
   of dependent types, which could allow for a more elegant expectation
   language. This solution may be similar to that of the recent work to
   replace OCaml's string formatting library with a GADT-based
@@ -233,7 +233,7 @@ current implementation. Namely:
 
 The mock pattern and mocking libraries have done much to further the
 state-of-the-art in software testing for object oriented
-langauges. The mock pattern's ability to remove side effects makes it
+languages. The mock pattern's ability to remove side effects makes it
 easy to test what once was hard-to-test code. While it may be easier
 to develop a mocking library in languages with run-time reflection
 capabilities, or even dynamically typed languages, it is entirely
