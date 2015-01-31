@@ -743,18 +743,19 @@ let expectations = [
 
 Mocks are only truly useful as a testing tool when they can be
 automatically generated. We will use a new feature of the OCaml 4.02
-compiler called ``extension points.'' \cite{ocaml:spec}. Extension
-points are a replacement for OCaml's previous pre-processing tool
-called Camlp4. Extension points provide a means for manipulating the
-abstract syntax tree (AST) of a program before compilation is
-finished. They are similar to Lisp's macro system, except that they
-are much more low-level, in that there is no anti-quotation system, and
-programmers must directly manipulate the compiler's view of the AST
-during the compilation of the program. In addition to providing a
-means to manipulate the AST of a program directly, extension points
-also provide a way to annotate source code. Annotations essentially
-add non-semantic nodes to the AST, which the compiler will ignore. A
-extension, however, can use this extra AST node however it wishes.
+compiler called ``extension points.'' \cite{www:ppx}. Extension points
+are a replacement for OCaml's previous pre-processing tool called
+Camlp4 \cite{www:camlp4}. Extension points provide a means for
+manipulating the abstract syntax tree (AST) of a program before
+compilation is finished. They are similar to Lisp's macro system,
+except that they are much more low-level, in that there is no
+anti-quotation system, and programmers must directly manipulate the
+compiler's view of the AST during the compilation of the program. In
+addition to providing a means to manipulate the AST of a program
+directly, extension points also provide a way to annotate source
+code. Annotations essentially add non-semantic nodes to the AST, which
+the compiler will ignore. A extension, however, can use this extra AST
+node however it wishes.
 
 We will make use of these extension points when generating mock
 modules.

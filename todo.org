@@ -2,7 +2,7 @@ _MoCaml Thesis: Work remaining_
 
 * Thesis Writing
 ** Background
-  - [ ] Unfinished diagrams
+  - [X] Unfinished diagrams
 ** Application
   - [X] Clean up dependency injection section
   - [-] Describe a manual mock
@@ -62,8 +62,8 @@ _MoCaml Thesis: Work remaining_
   - [X] Comparisons? Or is that application section?
   - [X] Next steps section
 ** Editing
-  - [ ] Spelling (make sure it's British English)
-  - [ ] Change references to Camlp4 to describe extension points
+  - [X] Spelling (make sure it's British English)
+  - [X] Change references to Camlp4 to describe extension points
   - [ ] Maybe drop Turtle example, and use Simple module instead?
 * MoCaml library
   - [ ] Code generation
