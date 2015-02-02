@@ -64,7 +64,7 @@ _MoCaml Thesis: Work remaining_
 ** Editing
   - [X] Spelling (make sure it's British English)
   - [X] Change references to Camlp4 to describe extension points
-  - [ ] Maybe drop Turtle example, and use Simple module instead?
+  - [X] Maybe drop Turtle example, and use Simple module instead?
 * MoCaml library
   - [ ] Code generation
     - [ ] Gen static functions
