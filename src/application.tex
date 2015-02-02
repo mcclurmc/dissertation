@@ -9,10 +9,26 @@ discuss a domain specific language for specifying expectations of a
 mock module, and the automatic generation of mock modules from a
 module interface.
 
-\section{Preliminary discussion}
+%% \section{Preliminary discussion}
 
-\subsection{Dependency injection methods in OCaml}
+%% \subsection{Dependency injection methods in OCaml}
+\section{Dependency injection methods in OCaml}
 \label{application:di}
+
+As briefly mentioned in section \ref{testdoubles:stub}, dependency
+injection (DI) is a useful technique for installing a test double in
+place of the depended-on component (DOC) in the system under test
+(SUT). Dependency injection is widely used in technique in object
+oriented languages\footnote{Dependency injection is used widely enough
+  in Java that there is a Java Specification Request (JSR 330) to add
+  a dependency injection framework to the Java standard library:
+  \url{https://jcp.org/en/jsr/detail?id=330}} for writing tests, and
+injecting configuration information into software at program start
+time. While there are many DI frameworks for languages such as Java
+and C\#, there are none for OCaml. We shall see that it is simple to
+perform dependency injection manually, however, using OCaml's module
+system. This will allow us to write test doubles and inject them into
+the system under test, with minimal modifications to the SUT itself.
 
 Dependency injection (DI) techniques in object oriented languages
 typically focus on lifting hard-coded dependencies into a class's
@@ -112,92 +128,92 @@ module, because we can set this module at module initialisation time.
 %% \section{Design considerations for mock modules}
 %% \label{application:manual-mock}
 
-\subsection{An example: the simplest mock module implementation}
-\label{application:simple}
+%% \subsection{An example: the simplest mock module implementation}
+%% \label{application:simple}
 
-Before we can automatically generate a mock module from a given
-interface, we must first describe how to create manually-written
-(hard-coded) mock modules.
+%% Before we can automatically generate a mock module from a given
+%% interface, we must first understand how to create manually-written
+%% (hard-coded) mock modules.
 
-Note that this method does not provide any features we would expect
-from a full-featured mocking framework such as JMock. There is no
-automatic generation of the mock implementation. There is no
-expectation language, or even a means to specify expectations. And
-because there is no way to specify expectations, the test case must
-set up the mocked functions manually, and verify the behaviour of the
-SUT manually.
+%% Note that this method does not provide any features we would expect
+%% from a full-featured mocking framework such as JMock. There is no
+%% automatic generation of the mock implementation. There is no
+%% expectation language, or even a means to specify expectations. And
+%% because there is no way to specify expectations, the test case must
+%% set up the mocked functions manually, and verify the behaviour of the
+%% SUT manually.
 
-While this is a very simplistic method for creating a mock module, we
-will continually extend this method in the following sections, until
-we have automatically generated mocks with an expression
-language.
+%% While this is a very simplistic method for creating a mock module, we
+%% will continually extend this method in the following sections, until
+%% we have automatically generated mocks with an expression
+%% language.
 
-% XXX Do we really need TURTLE? Why don't we just use SIMPLE instead?
+%% % XXX Do we really need TURTLE? Why don't we just use SIMPLE instead?
 
-Figure \ref{code:mock_real} shows an implementation of a module which
-we will mock throughout the next few sections. This module is called
-\code{Turtle}, and describes a simple drawing program which is meant
-to be reminiscent of the educational programming language
-Logo.\footnote{\url{http://en.wikipedia.org/wiki/Logo_(programming_language)}}
-We will treat the \code{Turtle} module as our DOC which we wish to
-mock.
+%% Figure \ref{code:mock_real} shows an implementation of a module which
+%% we will mock throughout the next few sections. This module is called
+%% \code{Turtle}, and describes a simple drawing program which is meant
+%% to be reminiscent of the educational programming language
+%% Logo.\footnote{\url{http://en.wikipedia.org/wiki/Logo_(programming_language)}}
+%% We will treat the \code{Turtle} module as our DOC which we wish to
+%% mock.
 
-\lstinputlisting[
-caption={An example module that we wish to mock},
-label=code:mock_real,
-aboveskip=\baselineskip,
-] {code/application/simplest_mock_real.ml}
+%% \lstinputlisting[
+%% caption={An example module that we wish to mock},
+%% label=code:mock_real,
+%% aboveskip=\baselineskip,
+%% ] {code/application/simplest_mock_real.ml}
 
-We see from the \code{TURTLE} signature that the \code{Turtle} module
-implements a simple interface. There are functions to make a new
-turtle, to turn the turtle $90^o$ in either direction, to move the
-turtle forward by a given number of units, and to put the pen up or
-down. When the pen is in the down position, moving the turtle would
-draw to the screen. We have included a simple combinator operator
-\code{>>} which allows us to easily chain together turtle operations.
+%% We see from the \code{TURTLE} signature that the \code{Turtle} module
+%% implements a simple interface. There are functions to make a new
+%% turtle, to turn the turtle $90^o$ in either direction, to move the
+%% turtle forward by a given number of units, and to put the pen up or
+%% down. When the pen is in the down position, moving the turtle would
+%% draw to the screen. We have included a simple combinator operator
+%% \code{>>} which allows us to easily chain together turtle operations.
 
-Figure \ref{code:mock_usage} shows a short program which demonstrates
-how one might use the \code{Turtle} library.
+%% Figure \ref{code:mock_usage} shows a short program which demonstrates
+%% how one might use the \code{Turtle} library.
 
-\lstinputlisting[
-caption={Example usage of the \code{Turtle} library},
-label=code:mock_usage,
-aboveskip=\baselineskip,
-] {code/application/simplest_mock_usage.ml}
+%% \lstinputlisting[
+%% caption={Example usage of the \code{Turtle} library},
+%% label=code:mock_usage,
+%% aboveskip=\baselineskip,
+%% ] {code/application/simplest_mock_usage.ml}
 
-Suppose now that we wish to test a function or module which depends
-upon this \code{Turtle} library. We may wish to test that this system,
-say, calls the \code{turn} function a certain number of times. We can
-create a manually mocked implementation of the \code{TURTLE} interface
-which replaces the original \code{turn} function with one which records
-the number of function invocations, the arguments of the function
-calls, and a pre-set value for the function to return upon
-invocation. Figure \ref{code:mock_partial} shows such an
-implementation of a partial, manual mock of the \code{Turtle} library.
+%% Suppose now that we wish to test a function or module which depends
+%% upon this \code{Turtle} library. We may wish to test that this system,
+%% say, calls the \code{turn} function a certain number of times. We can
+%% create a manually mocked implementation of the \code{TURTLE} interface
+%% which replaces the original \code{turn} function with one which records
+%% the number of function invocations, the arguments of the function
+%% calls, and a pre-set value for the function to return upon
+%% invocation. Figure \ref{code:mock_partial} shows such an
+%% implementation of a partial, manual mock of the \code{Turtle} library.
 
-%% Nodes from simplest_mock_partial.ml:
-%%
-%% A partial mock of TURTLE (only mock's turn function). This works by
-%% including the to-be-mocked module in the mock itself, and
-%% reimplementing the functions we want to mock. This won't work if
-%% initialising the to-be-mocked module will have unwanted side
-%% effects.
+%% %% Nodes from simplest_mock_partial.ml:
+%% %%
+%% %% A partial mock of TURTLE (only mock's turn function). This works by
+%% %% including the to-be-mocked module in the mock itself, and
+%% %% reimplementing the functions we want to mock. This won't work if
+%% %% initialising the to-be-mocked module will have unwanted side
+%% %% effects.
 
-\lstinputlisting[
-caption={A manually mocked OCaml module},
-label=code:mock_partial,
-aboveskip=\baselineskip,
-] {code/application/simplest_mock_partial.ml}
+%% \lstinputlisting[
+%% caption={A manually mocked OCaml module},
+%% label=code:mock_partial,
+%% aboveskip=\baselineskip,
+%% ] {code/application/simplest_mock_partial.ml}
 
-We can use this partial mock by installing it using any of the
-dependency injection techniques described section
-\ref{application:di}, and then write our test using the newly mocked
-DOC. Manually mocking a module in this way might be an effective way
-to write a test that would otherwise be impossible, but manually
-mocking modules in this manner is tedious and cumbersome. We would much
-prefer a method which allows us to describe the way that we expect the
-depended upon component to behave when it is interacting with the test
-case, and then generate a mock module from that set of expectations.
+%% We can use this partial mock by installing it using any of the
+%% dependency injection techniques described section
+%% \ref{application:di}, and then write our test using the newly mocked
+%% DOC. Manually mocking a module in this way might be an effective way
+%% to write a test that would otherwise be impossible, but manually
+%% mocking modules in this manner is tedious and cumbersome. We would much
+%% prefer a method which allows us to describe the way that we expect the
+%% depended upon component to behave when it is interacting with the test
+%% case, and then generate a mock module from that set of expectations.
 
 %\section{Specifying a mock's expectations}
 \section{Implementation of the mocking framework}
